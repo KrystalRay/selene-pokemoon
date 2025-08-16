@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Pokemoon Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #2c3e50;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        #canvas {
+            border: 2px solid #34495e;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #34495e;
+            border-radius: 5px;
+        }
+        .error { color: #e74c3c; }
+        .success { color: #27ae60; }
+        .info { color: #3498db; }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pokemoon Test Page</h1>
+    
+    <div class="test-section">
+        <h3>Step 1: Basic Setup</h3>
+        <p>Canvas: <span id="canvas-status">Not created</span></p>
+        <p>Script loaded: <span id="script-status">Not loaded</span></p>
+        <button onclick="testCanvas()">Test Canvas</button>
+        <button onclick="loadScript()">Load Script</button>
+        <button onclick="testGameFunctions()">Test Functions</button>
+        <button onclick="analyzeGameFunctions()">Analyze Functions</button>
+        <button onclick="startGame()">Start Game</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Step 2: Game Initialization</h3>
+        <p>Game state: <span id="game-status">Not started</span></p>
+        <button onclick="startGame()">Start Game</button>
+        <button onclick="testGameFunctions()">Test Game Functions</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Debug Info</h3>
+        <div id="debug-log"></div>
+    </div>
+    
+    <canvas id="canvas" width="512" height="384"></canvas>
+    
+    <script>
+        let gameLoaded = false;
+        let gameStarted = false;
+        
+        function log(message, type = 'info') {
+            const debugDiv = document.getElementById('debug-log');
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            debugDiv.appendChild(div);
+            
+            // Keep only last 20 messages
+            const messages = debugDiv.querySelectorAll('div');
+            if (messages.length > 20) {
+                messages[0].remove();
+            }
+            
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function testCanvas() {
+            try {
+                const canvas = document.getElementById('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                if (ctx) {
+                    ctx.fillStyle = '#34495e';
+                    ctx.fillRect(0, 0, 512, 384);
+                    ctx.fillStyle = '#ecf0f1';
+                    ctx.font = '16px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Canvas Test - Working!', 256, 192);
+                    
+                    document.getElementById('canvas-status').textContent = 'Working';
+                    document.getElementById('canvas-status').className = 'success';
+                    log('Canvas test successful', 'success');
+                } else {
+                    throw new Error('Could not get canvas context');
+                }
+            } catch (error) {
+                document.getElementById('canvas-status').textContent = 'Error: ' + error.message;
+                document.getElementById('canvas-status').className = 'error';
+                log('Canvas test failed: ' + error.message, 'error');
+            }
+        }
+        
+        function loadScript() {
+            try {
+                log('Loading pokemoon.js...', 'info');
+                
+                const script = document.createElement('script');
+                script.src = './target/js/release/build/pokemoon.js';
+                
+                script.onload = function() {
+                    gameLoaded = true;
+                    document.getElementById('script-status').textContent = 'Loaded';
+                    document.getElementById('script-status').className = 'success';
+                    log('pokemoon.js loaded successfully', 'success');
+                    
+                    // Check if game functions are available
+                    if (typeof Milky2018 !== 'undefined') {
+                        log('Milky2018 framework available', 'success');
+                    } else {
+                        log('Milky2018 framework not found', 'error');
+                    }
+                };
+                
+                script.onerror = function() {
+                    document.getElementById('script-status').textContent = 'Failed to load';
+                    document.getElementById('script-status').className = 'error';
+                    log('Failed to load pokemoon.js', 'error');
+                };
+                
+                document.head.appendChild(script);
+                
+            } catch (error) {
+                log('Error loading script: ' + error.message, 'error');
+            }
+        }
+        
+        function startGame() {
+            if (!gameLoaded) {
+                log('Script not loaded yet', 'error');
+                return;
+            }
+            
+            try {
+                log('Attempting to start game...', 'info');
+                
+                // Try to find and call the game start function
+                const gameStartFunc = window['nonpublish$pokemoon$$game_start'];
+                if (gameStartFunc && typeof gameStartFunc === 'function') {
+                    log('Calling game_start function with backend parameter...', 'info');
+                    
+                    // Try to call with a backend parameter
+                    try {
+                        // Create a simple backend object
+                        const backend = {
+                            canvas: document.getElementById('gameCanvas'),
+                            ctx: document.getElementById('gameCanvas').getContext('2d'),
+                            width: 800,
+                            height: 600
+                        };
+                        
+                        log('Backend object created: ' + JSON.stringify(backend), 'info');
+                        
+                        const result = gameStartFunc(backend);
+                        log('Game started successfully! Result: ' + result, 'success');
+                    } catch (funcError) {
+                        log('Function execution error: ' + funcError.message, 'error');
+                        log('Error stack: ' + funcError.stack, 'error');
+                        
+                        // Try without parameters as fallback
+                        try {
+                            log('Trying without parameters...', 'info');
+                            const result = gameStartFunc();
+                            log('Game started without parameters! Result: ' + result, 'success');
+                        } catch (fallbackError) {
+                            log('Fallback also failed: ' + fallbackError.message, 'error');
+                        }
+                    }
+                } else {
+                    log('game_start function not found', 'error');
+                }
+                
+            } catch (error) {
+                log('Error starting game: ' + error.message, 'error');
+                if (error.stack) {
+                    log('Error stack: ' + error.stack, 'error');
+                }
+            }
+        }
+        
+        function testGameFunctions() {
+            if (!gameLoaded) {
+                log('Script not loaded yet', 'error');
+                return;
+            }
+            
+            try {
+                log('Testing game functions...', 'info');
+                
+                // Test specific game functions
+                const functions = [
+                    'nonpublish$pokemoon$$game_start',
+                    'nonpublish$pokemoon$$add_player',
+                    'nonpublish$pokemoon$$generate_map',
+                    'nonpublish$pokemoon$$add_background'
+                ];
+                
+                let availableFunctions = [];
+                functions.forEach(funcName => {
+                    if (window[funcName] && typeof window[funcName] === 'function') {
+                        availableFunctions.push(funcName);
+                    }
+                });
+                
+                if (availableFunctions.length > 0) {
+                    log(`Available game functions: ${availableFunctions.join(', ')}`, 'success');
+                } else {
+                    log('No game functions found', 'error');
+                }
+                
+            } catch (error) {
+                log('Error testing functions: ' + error.message, 'error');
+            }
+        }
+
+        function analyzeGameFunctions() {
+            if (!gameLoaded) {
+                log('Script not loaded yet', 'error');
+                return;
+            }
+            
+            try {
+                log('Analyzing game functions...', 'info');
+                
+                const functions = [
+                    'nonpublish$pokemoon$$game_start',
+                    'nonpublish$pokemoon$$add_player',
+                    'nonpublish$pokemoon$$generate_map',
+                    'nonpublish$pokemoon$$add_background'
+                ];
+                
+                functions.forEach(funcName => {
+                    const func = window[funcName];
+                    if (func && typeof func === 'function') {
+                        log(`Function ${funcName}:`, 'info');
+                        log(`  - Type: ${typeof func}`, 'info');
+                        log(`  - Length (parameters): ${func.length}`, 'info');
+                        log(`  - toString: ${func.toString().substring(0, 100)}...`, 'info');
+                    }
+                });
+                
+            } catch (error) {
+                log('Error analyzing functions: ' + error.message, 'error');
+            }
+        }
+        
+        // Initialize
+        window.addEventListener('load', function() {
+            log('Test page loaded', 'info');
+            testCanvas();
+        });
+        
+        // Error handling
+        window.addEventListener('error', function(e) {
+            log(`JavaScript error: ${e.message}`, 'error');
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            log(`Unhandled promise rejection: ${e.reason}`, 'error');
+        });
+    </script>
+</body>
+</html> 

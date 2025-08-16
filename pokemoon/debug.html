@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Pokemoon Debug</title>
+    <style>
+        body {
+            background-color: #2c3e50;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        #canvas {
+            border: 2px solid #34495e;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        #debug {
+            background-color: #34495e;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .error { color: #e74c3c; }
+        .success { color: #27ae60; }
+        .info { color: #3498db; }
+    </style>
+</head>
+<body>
+    <h1>Pokemoon Debug Page</h1>
+    
+    <div id="debug">
+        <h3>Debug Information:</h3>
+        <div id="status">Loading...</div>
+        <div id="errors"></div>
+    </div>
+    
+    <canvas id="canvas" width="512" height="384"></canvas>
+    
+    <script>
+        // Debug logging
+        const debugDiv = document.getElementById('status');
+        const errorsDiv = document.getElementById('errors');
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            debugDiv.appendChild(div);
+        }
+        
+        function logError(message) {
+            const div = document.createElement('div');
+            div.className = 'error';
+            div.textContent = `[${new Date().toLocaleTimeString()}] ERROR: ${message}`;
+            errorsDiv.appendChild(div);
+        }
+        
+        // Check if canvas is available
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        if (ctx) {
+            log('Canvas context created successfully', 'success');
+            
+            // Draw a test pattern
+            ctx.fillStyle = '#34495e';
+            ctx.fillRect(0, 0, 512, 384);
+            
+            ctx.fillStyle = '#e74c3c';
+            ctx.font = '24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Canvas Test - Pokemoon', 256, 192);
+            
+            ctx.fillStyle = '#27ae60';
+            ctx.font = '16px Arial';
+            ctx.fillText('If you see this, canvas is working', 256, 220);
+            
+            log('Test pattern drawn to canvas', 'success');
+        } else {
+            logError('Failed to get canvas context');
+        }
+        
+        // Load the game script
+        log('Loading pokemoon.js...');
+        
+        const script = document.createElement('script');
+        script.src = '/target/js/release/build/pokemoon.js';
+        script.onload = function() {
+            log('pokemoon.js loaded successfully', 'success');
+            log('Game should start automatically...');
+        };
+        script.onerror = function() {
+            logError('Failed to load pokemoon.js');
+        };
+        
+        // Add error handling for the game
+        window.addEventListener('error', function(e) {
+            logError(`JavaScript error: ${e.message} at ${e.filename}:${e.lineno}`);
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            logError(`Unhandled promise rejection: ${e.reason}`);
+        });
+        
+        document.head.appendChild(script);
+    </script>
+</body>
+</html> 

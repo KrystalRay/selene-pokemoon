@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Pokemoon - A Pokemon-style RPG</title>
+    <style type="text/css">
+        @font-face {
+            font-family: "ThaleahFat";
+            src: url("./ThaleahFat.ttf") format("truetype");
+            font-weight: normal;
+            font-style: normal;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #2c3e50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        #canvas {
+            border: 2px solid #34495e;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        .game-title {
+            color: #ecf0f1;
+            text-align: center;
+            margin: 0 0 10px 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        #debug {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(52, 73, 94, 0.9);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            max-width: 300px;
+            z-index: 1000;
+        }
+        .error { color: #e74c3c; }
+        .success { color: #27ae60; }
+        .info { color: #3498db; }
+    </style>
+    <script>
+        // Debug logging
+        function log(message, type = 'info') {
+            const debugDiv = document.getElementById('debug');
+            if (debugDiv) {
+                const div = document.createElement('div');
+                div.className = type;
+                div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                debugDiv.appendChild(div);
+                
+                // Keep only last 10 messages
+                const messages = debugDiv.querySelectorAll('div');
+                if (messages.length > 10) {
+                    messages[0].remove();
+                }
+            }
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        // Error handling
+        window.addEventListener('error', function(e) {
+            log(`JavaScript error: ${e.message}`, 'error');
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            log(`Unhandled promise rejection: ${e.reason}`, 'error');
+        });
+        
+        // Check canvas
+        window.addEventListener('load', function() {
+            const canvas = document.getElementById('canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                    log('Canvas context created successfully', 'success');
+                    
+                    // Draw initial content
+                    ctx.fillStyle = '#34495e';
+                    ctx.fillRect(0, 0, 512, 384);
+                    ctx.fillStyle = '#ecf0f1';
+                    ctx.font = '16px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Loading Pokemoon...', 256, 192);
+                    
+                    log('Initial canvas content drawn', 'success');
+                } else {
+                    log('Failed to get canvas context', 'error');
+                }
+            } else {
+                log('Canvas element not found', 'error');
+            }
+        });
+    </script>
+</head>
+
+<body>
+    <div id="debug">
+        <strong>Debug Info:</strong>
+        <div>Loading...</div>
+    </div>
+    
+    <div>
+        <div class="game-title">Pokemoon - A Pokemon-style RPG</div>
+        <canvas id="canvas" width="512" height="384"></canvas>
+    </div>
+    
+    <script>
+        log('Page loaded, starting game script...');
+        
+        const script = document.createElement('script');
+        script.src = '/target/js/release/build/pokemoon.js';
+        script.onload = function() {
+            log('pokemoon.js loaded successfully', 'success');
+            log('Game should start automatically...');
+        };
+        script.onerror = function() {
+            log('Failed to load pokemoon.js', 'error');
+        };
+        
+        document.head.appendChild(script);
+    </script>
+</body>
+
+</html>

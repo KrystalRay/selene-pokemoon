@@ -1,0 +1,247 @@
+// Copyright 2025 International Digital Economy Academy
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+///|
+fn tile_to_vec2d(tile : @tilemap.Tile, tile_size : Int) -> @math.Vec2D {
+  @math.Vec2D(
+    tile.x.to_double() * tile_size.to_double(),
+    tile.y.to_double() * tile_size.to_double(),
+  )
+}
+
+///|
+fn generate_map(backend : &@system.Backend) -> Unit {
+  let tilemap = @tilemap.TileMap::from_json(tilemap)
+  let world_width = tilemap.map_width.to_double() *
+    tilemap.tile_size.to_double()
+  let world_height = tilemap.map_height.to_double() *
+    tilemap.tile_size.to_double()
+  
+  // 相机设置将在add_player中完成
+  
+  // 移除相机边界限制，允许自由移动
+  @camera.camera.limit_left = None
+  @camera.camera.limit_right = None
+  @camera.camera.limit_top = None
+  @camera.camera.limit_bottom = None
+  
+  add_background(@math.Vec2D(world_width, world_height))
+  
+  // 修改玩家生成位置，放在地图中心附近
+  let player_start = tilemap.get_tiles_first("MaskDude")[0]
+  add_player(tile_to_vec2d(player_start, tilemap.tile_size))
+  
+  // 移除平台游戏特有的元素
+  // let flag = tilemap.get_tiles_first("Flag")[0]
+  // add_flag(tile_to_vec2d(flag, tilemap.tile_size) - @math.Vec2D(16.0, 16.0))
+  
+  // 添加宝可梦风格的元素
+  let npcs = tilemap.get_tiles("NPC")
+  for npc in npcs {
+    add_npc(tile_to_vec2d(npc, tilemap.tile_size), npc.id)
+  }
+  
+  let items = tilemap.get_tiles("Item")
+  for item in items {
+    add_item(tile_to_vec2d(item, tilemap.tile_size), item.id)
+  }
+  
+  let grasses = tilemap.get_tiles("Grass")
+  for grass in grasses {
+    add_grass(tile_to_vec2d(grass, tilemap.tile_size), grass.id)
+  }
+}
+
+///|
+fn add_background(size : @math.Vec2D) -> Unit {
+  let background = @system.Entity::new()
+  let background_sprite = @sprite.Sprite::new_picture(
+    @sprite.Picture::new(
+      size,
+      "pixel_adventure/Background/Gray.png",
+      repeat=Repeat,
+    ),
+    0,
+  )
+  @sprite.sprites.set(background, background_sprite)
+  @position.positions.set(background, @math.Vec2D(0, 0))
+}
+
+///|
+fn add_grass(pos : @math.Vec2D, sprite_id : String) -> Unit {
+  let src_pos = match sprite_id {
+    "15" => @math.Vec2D(96.0, 0.0)
+    "9" => @math.Vec2D(112.0, 0.0)
+    "16" => @math.Vec2D(128.0, 0.0)
+    "11" => @math.Vec2D(96.0, 16.0)
+    "13" => @math.Vec2D(112.0, 16.0)
+    "10" => @math.Vec2D(128.0, 16.0)
+    "14" => @math.Vec2D(96.0, 32.0)
+    "8" => @math.Vec2D(112.0, 32.0)
+    "12" => @math.Vec2D(128.0, 32.0)
+    _ => panic()
+  }
+  let sprite = @sprite.Sprite::new_animation(
+    @sprite.Animation::new(
+      "pixel_adventure/Terrain/Terrain (16x16).png",
+      max_frame=1,
+      height=16.0,
+      width=16.0,
+      offset=src_pos,
+    ),
+    10,
+  )
+  let grass = @system.Entity::new()
+  @sprite.sprites.set(grass, sprite)
+  @position.positions.set(grass, pos)
+  @collision.collides.set(grass, @collision.Collide::{
+    shape: Rect(size=@math.Vec2D(16.0, 16.0), offset=@math.Vec2D::zero()),
+    layer: terrain_collision_layer,
+    mask: @collision.CollisionMask::new([player_collision_layer]),  // 让玩家无法通过草地
+  })
+}
+
+///|
+let non_collide_layer : @collision.CollisionLayer = @collision.CollisionLayer::new()
+
+///|
+fn add_flag(pos : @math.Vec2D) -> Unit {
+  let flag = @system.Entity::new()
+  let flag_sprite = @sprite.Sprite::new_animation(
+    @sprite.Animation::new(
+      "pixel_adventure/Items/Checkpoints/Checkpoint/Checkpoint (Flag Idle)(64x64).png",
+      max_frame=10,
+      height=64.0,
+      width=64.0,
+      loop_=true,
+    ),
+    20,
+  )
+  @sprite.sprites.set(flag, flag_sprite)
+  @position.positions.set(flag, pos)
+  let area = @collision.Area::new(
+    Rect(size=@math.Vec2D(64.0, 64.0), offset=@math.Vec2D::zero()),
+    non_collide_layer,
+    @collision.CollisionMask::new([player_collision_layer]),
+  )
+  @collision.areas.set(flag, area)
+  area.on_enter(fn(e) {
+    if e == game_state.player {
+      set_score(game_state.score + 100)
+      set_game_result(GameResult::Win)
+      @system.Entity::destroy(flag)
+    }
+  })
+}
+
+///|
+fn add_apple(backend : &@system.Backend, pos : @math.Vec2D) -> Unit {
+  let apple = @system.Entity::new()
+  let apple_sprite = @sprite.Sprite::new_animation(
+    @sprite.Animation::new(
+      "pixel_adventure/Items/Fruits/Apple.png",
+      max_frame=17,
+      height=32.0,
+      width=32.0,
+      loop_=true,
+    ),
+    20,
+  )
+  @sprite.sprites.set(apple, apple_sprite)
+  @position.positions.set(apple, pos)
+  let area = @collision.Area::new(
+    Rect(size=@math.Vec2D(32.0, 32.0), offset=@math.Vec2D::zero()),
+    non_collide_layer,
+    @collision.CollisionMask::new([player_collision_layer]),
+  )
+  @collision.areas.set(apple, area)
+  area.on_enter(fn(e) {
+    if e == game_state.player {
+      set_score(game_state.score + 10)
+      if game_state.volume_on {
+        @audio.play_audio(backend, "sounds/coin.wav")
+      }
+      @system.Entity::destroy(apple)
+    }
+  })
+}
+
+///|
+fn add_npc(pos : @math.Vec2D, npc_id : String) -> Unit {
+  let npc = @system.Entity::new()
+  
+  // 根据NPC ID加载不同的精灵
+  let sprite = match npc_id {
+    "1" => @sprite.Sprite::new_animation(
+      @sprite.Animation::new(
+        "pixel_adventure/Main Characters/Ninja Frog/Idle (32x32).png",
+        max_frame=11,
+        height=32.0,
+        width=32.0,
+      ),
+      10,
+    )
+    "2" => @sprite.Sprite::new_animation(
+      @sprite.Animation::new(
+        "pixel_adventure/Main Characters/Pink Man/Idle (32x32).png",
+        max_frame=11,
+        height=32.0,
+        width=32.0,
+      ),
+      10,
+    )
+    _ => @sprite.Sprite::new_animation(
+      @sprite.Animation::new(
+        "pixel_adventure/Main Characters/Virtual Guy/Idle (32x32).png",
+        max_frame=11,
+        height=32.0,
+        width=32.0,
+      ),
+      10,
+    )
+  }
+  
+  @sprite.sprites.set(npc, sprite)
+  @position.positions.set(npc, pos)
+  
+  // 添加NPC碰撞
+  @collision.collides.set(npc, @collision.Collide::{
+    shape: Rect(size=@math.Vec2D(24.0, 32.0), offset=@math.Vec2D(4.0, 0.0)),
+    layer: npc_collision_layer,
+    mask: @collision.CollisionMask::new([player_collision_layer]),
+  })
+}
+
+///|
+fn add_item(pos : @math.Vec2D, item_id : String) -> Unit {
+  let item = @system.Entity::new()
+  
+  let sprite = @sprite.Sprite::new_picture(
+    @sprite.Picture::new(
+      @math.Vec2D(16, 16),
+      "pixel_adventure/Items/Apple.png",
+    ),
+    50,
+  )
+  
+  @sprite.sprites.set(item, sprite)
+  @position.positions.set(item, pos)
+  
+  // 添加物品碰撞
+  @collision.collides.set(item, @collision.Collide::{
+    shape: Rect(size=@math.Vec2D(16.0, 16.0), offset=@math.Vec2D::zero()),
+    layer: item_collision_layer,
+    mask: @collision.CollisionMask::new([player_collision_layer]),
+  })
+}
