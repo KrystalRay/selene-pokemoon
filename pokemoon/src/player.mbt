@@ -12,6 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// NPC系统函数
+fn get_npc_dialogue(npc_id : String, npc_pos : @math.Vec2D) -> String {
+  match npc_id {
+    "1" => "欢迎来到宝可梦世界！"
+    "2" => "这里有很多有趣的宝可梦！"
+    _ => "祝你冒险愉快！"
+  }
+}
+
+fn check_npc_interaction_range(player_pos : @math.Vec2D, npc_pos : @math.Vec2D, interaction_range : Double) -> Bool {
+  let diff = player_pos - npc_pos
+  let distance = (diff[X] * diff[X] + diff[Y] * diff[Y]).sqrt()
+  distance <= interaction_range
+}
+
 ///|
 let player_idle_animation : @sprite.Animation = @sprite.Animation::new(
   "pixel_adventure/Main Characters/Mask Dude/Idle (32x32).png",
@@ -59,10 +74,11 @@ enum PlayerState {
 const MOVE_SPEED = 2.0
 
 ///|
-const TILE_SIZE = 16.0
+// 暂时注释掉未使用的常量
+// const TILE_SIZE = 16.0
 
 ///|
-fn player_state_system(backend : &@system.Backend) -> Unit {
+fn player_state_system(_backend : &@system.Backend) -> Unit {
   // 如果在战斗状态，不处理移动输入
   if is_in_battle() {
     // 停止玩家移动
@@ -70,8 +86,8 @@ fn player_state_system(backend : &@system.Backend) -> Unit {
     return
   }
   
-  guard @velocity.velocities.get(game_state.player) is Some(velocity)
-  guard @position.positions.get(game_state.player) is Some(position)
+  guard @velocity.velocities.get(game_state.player) is Some(_velocity)
+  guard @position.positions.get(game_state.player) is Some(_position)
   
   let mut new_velocity_x = 0.0
   let mut new_velocity_y = 0.0
@@ -108,15 +124,15 @@ fn player_state_system(backend : &@system.Backend) -> Unit {
   
   if is_moving {
     @sprite.play_animation(game_state.player, player_walk_animation, transform~)
-    game_state.player_state = PlayerState::Walking
+    // game_state.player_state = PlayerState::Walking
   } else {
     @sprite.play_animation(game_state.player, player_idle_animation, transform~)
-    game_state.player_state = PlayerState::Idle
+    // game_state.player_state = PlayerState::Idle
   }
 }
 
 ///|
-fn player_interaction_system(backend : &@system.Backend) -> Unit {
+fn player_interaction_system(_backend : &@system.Backend) -> Unit {
   guard @position.positions.get(game_state.player) is Some(pos)
   
   // 检测与NPC的交互
@@ -130,22 +146,41 @@ fn player_interaction_system(backend : &@system.Backend) -> Unit {
 
 ///|
 fn check_npc_interaction(player_pos : @math.Vec2D) -> Unit {
-  // 实现NPC对话逻辑
-  // 这里可以添加对话系统
-  // 暂时只是打印信息
-  println("Trying to interact with NPC...")
+  // 检测玩家附近的NPC
+  let interaction_range = 32.0 // 交互范围
+  
+  // 遍历所有实体，找到NPC
+  let entities = @system.all_entities.to_array()
+  for entity in entities {
+    // 检查是否有NPC碰撞层
+    if @collision.collides.get(entity) is Some(collide) {
+      if collide.layer == npc_collision_layer {
+        // 检查距离
+        if @position.positions.get(entity) is Some(npc_pos) {
+          if check_npc_interaction_range(player_pos, npc_pos.inner(), interaction_range) {
+            // 在交互范围内，触发对话
+            let dialogue = get_npc_dialogue("1", npc_pos.inner()) // 暂时使用默认ID
+            println("NPC: " + dialogue)
+            return
+          }
+        }
+      }
+    }
+  }
+  
+  println("没有找到附近的NPC")
 }
 
 ///|
-fn check_item_interaction(player_pos : @math.Vec2D) -> Unit {
+fn check_item_interaction(_player_pos : @math.Vec2D) -> Unit {
   // 实现物品拾取逻辑
   // 这里可以添加背包系统
   // 暂时只是打印信息
-  println("Checking for items...")
+  // println("Checking for items...")  // 注释掉频繁的日志输出
 }
 
 ///|
-fn camera_follow_system(backend : &@system.Backend) -> Unit {
+fn camera_follow_system(_backend : &@system.Backend) -> Unit {
   guard @position.positions.get(game_state.player) is Some(pos)
   
   // 让相机平滑跟随玩家，但保持俯视角度

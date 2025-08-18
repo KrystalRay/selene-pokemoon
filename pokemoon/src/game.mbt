@@ -15,7 +15,7 @@
 ///|
 struct GameState {
   player : @system.Entity
-  mut player_state : PlayerState
+  player_state : PlayerState
   mut direction : Direction2
   mut score : Int
   result_box : @sprite.Text

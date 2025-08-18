@@ -21,7 +21,7 @@ fn tile_to_vec2d(tile : @tilemap.Tile, tile_size : Int) -> @math.Vec2D {
 }
 
 ///|
-fn generate_map(backend : &@system.Backend) -> Unit {
+fn generate_map(_backend : &@system.Backend) -> Unit {
   let tilemap = @tilemap.TileMap::from_json(tilemap)
   let world_width = tilemap.map_width.to_double() *
     tilemap.tile_size.to_double()
@@ -116,66 +116,69 @@ fn add_grass(pos : @math.Vec2D, sprite_id : String) -> Unit {
 let non_collide_layer : @collision.CollisionLayer = @collision.CollisionLayer::new()
 
 ///|
-fn add_flag(pos : @math.Vec2D) -> Unit {
-  let flag = @system.Entity::new()
-  let flag_sprite = @sprite.Sprite::new_animation(
-    @sprite.Animation::new(
-      "pixel_adventure/Items/Checkpoints/Checkpoint/Checkpoint (Flag Idle)(64x64).png",
-      max_frame=10,
-      height=64.0,
-      width=64.0,
-      loop_=true,
-    ),
-    20,
-  )
-  @sprite.sprites.set(flag, flag_sprite)
-  @position.positions.set(flag, pos)
-  let area = @collision.Area::new(
-    Rect(size=@math.Vec2D(64.0, 64.0), offset=@math.Vec2D::zero()),
-    non_collide_layer,
-    @collision.CollisionMask::new([player_collision_layer]),
-  )
-  @collision.areas.set(flag, area)
-  area.on_enter(fn(e) {
-    if e == game_state.player {
-      set_score(game_state.score + 100)
-      set_game_result(GameResult::Win)
-      @system.Entity::destroy(flag)
-    }
-  })
-}
+// 暂时注释掉未使用的函数
+// fn add_flag(pos : @math.Vec2D) -> Unit {
+//   let flag = @system.Entity::new()
+//   let flag_sprite = @sprite.Sprite::new_animation(
+//     @sprite.Animation::new(
+//       "pixel_adventure/Items/Checkpoints/Checkpoint/Checkpoint (Flag Idle)(64x64).png",
+//       max_frame=10,
+//       height=64.0,
+//       width=64.0,
+//       loop_=true,
+//     ),
+//     20,
+//   )
+//   @sprite.sprites.set(flag, flag_sprite)
+//   @position.positions.set(flag, pos)
+//   let area = @collision.Area::new(
+//     Rect(size=@math.Vec2D(64.0, 64.0), offset=@math.Vec2D::zero()),
+//     non_collide_layer,
+//     @collision.CollisionMask::new([player_collision_layer]),
+//   )
+//   @collision.areas.set(flag, area)
+//   area.on_enter(fn(e) {
+//     if e == game_state.player {
+//       set_score(game_state.score + 100)
+//       set_game_result(GameResult::Win)
+//       @system.Entity::destroy(flag)
+//     }
+//   })
+// }
 
 ///|
-fn add_apple(backend : &@system.Backend, pos : @math.Vec2D) -> Unit {
-  let apple = @system.Entity::new()
-  let apple_sprite = @sprite.Sprite::new_animation(
-    @sprite.Animation::new(
-      "pixel_adventure/Items/Fruits/Apple.png",
-      max_frame=17,
-      height=32.0,
-      width=32.0,
-      loop_=true,
-    ),
-    20,
-  )
-  @sprite.sprites.set(apple, apple_sprite)
-  @position.positions.set(apple, pos)
-  let area = @collision.Area::new(
-    Rect(size=@math.Vec2D(32.0, 32.0), offset=@math.Vec2D::zero()),
-    non_collide_layer,
-    @collision.CollisionMask::new([player_collision_layer]),
-  )
-  @collision.areas.set(apple, area)
-  area.on_enter(fn(e) {
-    if e == game_state.player {
-      set_score(game_state.score + 10)
-      if game_state.volume_on {
-        @audio.play_audio(backend, "sounds/coin.wav")
-      }
-      @system.Entity::destroy(apple)
-    }
-  })
-}
+// 暂时注释掉未使用的函数
+// fn add_apple(backend : &@system.Backend, pos : @math.Vec2D) -> Unit {
+//   let apple = @system.Entity::new()
+//   let apple_sprite = @sprite.Sprite::new_animation(
+//     @sprite.Animation::new(
+//       "pixel_adventure/Items/Fruits/Apple.png",
+//       max_frame=17,
+//       height=32.0,
+//       width=32.0,
+//       loop_=true,
+//     ),
+//     20,
+//   )
+//   @sprite.sprites.set(apple, apple_sprite)
+//   @position.positions.set(apple, pos)
+//   let area = @collision.Area::new(
+//     Rect(size=@math.Vec2D(32.0, 32.0), offset=@math.Vec2D::zero()),
+//     non_collide_layer,
+//     @collision.CollisionMask::new([player_collision_layer]),
+//   )
+//   @collision.areas.set(apple, area)
+//   area.on_enter(fn(e) {
+//     if e == game_state.player {
+//       set_score(game_state.score + 10)
+//       if game_state.volume_on {
+//         @audio.play_audio(backend, "sounds/coin.wav")
+//       }
+//       @system.Entity::destroy(apple)
+//       @system.Entity::destroy(apple)
+//     }
+//   })
+// }
 
 ///|
 fn add_npc(pos : @math.Vec2D, npc_id : String) -> Unit {
@@ -189,6 +192,8 @@ fn add_npc(pos : @math.Vec2D, npc_id : String) -> Unit {
         max_frame=11,
         height=32.0,
         width=32.0,
+        loop_=true,
+        rate=0.15,
       ),
       10,
     )
@@ -198,6 +203,8 @@ fn add_npc(pos : @math.Vec2D, npc_id : String) -> Unit {
         max_frame=11,
         height=32.0,
         width=32.0,
+        loop_=true,
+        rate=0.12,
       ),
       10,
     )
@@ -207,6 +214,8 @@ fn add_npc(pos : @math.Vec2D, npc_id : String) -> Unit {
         max_frame=11,
         height=32.0,
         width=32.0,
+        loop_=true,
+        rate=0.18,
       ),
       10,
     )
@@ -221,10 +230,26 @@ fn add_npc(pos : @math.Vec2D, npc_id : String) -> Unit {
     layer: npc_collision_layer,
     mask: @collision.CollisionMask::new([player_collision_layer]),
   })
+  
+  // 为NPC添加名字标签
+  let npc_name = match npc_id {
+    "1" => "忍者蛙"
+    "2" => "粉红人"
+    _ => "虚拟人"
+  }
+  
+  let name_entity = @system.Entity::new()
+  let name_sprite = @sprite.Sprite::new_text(@sprite.Text::new(npc_name, font="12px Arial", color="white"), 15)
+  @sprite.sprites.set(name_entity, name_sprite)
+  @position.positions.set(name_entity, pos + @math.Vec2D(0.0, -20.0))
+  @ui.uis.set(name_entity, @ui.Ui::new())
+  
+  // 将名字实体添加到游戏状态中，以便后续管理
+  // 这里可以创建一个NPC管理列表
 }
 
 ///|
-fn add_item(pos : @math.Vec2D, item_id : String) -> Unit {
+fn add_item(pos : @math.Vec2D, _item_id : String) -> Unit {
   let item = @system.Entity::new()
   
   let sprite = @sprite.Sprite::new_picture(

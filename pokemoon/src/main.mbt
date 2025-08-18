@@ -13,10 +13,10 @@
 // limitations under the License.
 
 ///|
-const VIEWPORT_WIDTH : Double = 512.0
+const VIEWPORT_WIDTH : Double = 800.0
 
 ///|
-const VIEWPORT_HEIGHT : Double = 384.0
+const VIEWPORT_HEIGHT : Double = 600.0
 
 ///|
 fn main {

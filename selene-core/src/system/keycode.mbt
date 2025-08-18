@@ -162,6 +162,7 @@ pub fn Code::from_string(code : String) -> Code? {
     "KeyW" => Some(KeyW)
     "KeyX" => Some(KeyX)
     "KeyY" => Some(KeyY)
+    "KeyZ" => Some(KeyZ)
     "ArrowUp" => Some(ArrowUp)
     "ArrowDown" => Some(ArrowDown)
     "ArrowLeft" => Some(ArrowLeft)

@@ -1,0 +1,140 @@
+{
+  "battle_menu_config": {
+    "main_menu": {
+      "visible": false,
+      "selected_index": 0,
+      "selected_option": "Fight",
+      "position": {
+        "x": 50.0,
+        "y": 400.0
+      },
+      "width": 170.0,
+      "height": 115.0,
+      "background_color": "#1a1a1a",
+      "border_color": "#4ECDC4",
+      "text_color": "#FFFFFF",
+      "indicator_color": "#4ECDC4",
+      "button_spacing": 25.0,
+      "button_height": 20.0,
+      "button_padding": 10.0,
+      "description": "主战斗菜单，包含Fight、Bag、Pokemon、Run四个选项"
+    },
+    "skill_menu": {
+      "visible": false,
+      "selected_index": 0,
+      "position": {
+        "x": 250.0,
+        "y": 400.0
+      },
+      "width": 220.0,
+      "height": 200.0,
+      "background_color": "#1a1a1a",
+      "border_color": "#4ECDC4",
+      "text_color": "#FFFFFF",
+      "indicator_color": "#4ECDC4",
+      "title_color": "#FFFFFF",
+      "skill_spacing": 30.0,
+      "skill_height": 25.0,
+      "skill_padding": 25.0,
+      "title_height": 20.0,
+      "description": "技能菜单，显示所有可用技能及其伤害和MP消耗"
+    },
+    "screen": {
+      "width": 800.0,
+      "height": 600.0,
+      "title_height": 32.0,
+      "prompt_height": 18.0,
+      "description": "屏幕尺寸和UI元素高度配置"
+    },
+    "layout": {
+      "margin": 20.0,
+      "padding": 15.0,
+      "enemy_area_width": 120.0,
+      "enemy_area_height": 100.0,
+      "player_area_width": 120.0,
+      "player_area_height": 100.0,
+      "menu_area_width": 200.0,
+      "menu_area_height": 120.0,
+      "status_area_width": 100.0,
+      "status_area_height": 80.0,
+      "title_offset_y": 20.0,
+      "enemy_offset_y": 50.0,
+      "player_offset_y": 50.0,
+      "menu_offset_y": 170.0,
+      "status_offset_y": 170.0,
+      "description": "布局配置，包含各区域尺寸和位置偏移"
+    },
+    "skills": [
+      {
+        "name": "Tackle",
+        "damage": 15,
+        "description": "A basic attack",
+        "mp_cost": 0,
+        "type": "Physical"
+      },
+      {
+        "name": "Ember",
+        "damage": 25,
+        "description": "A fire attack",
+        "mp_cost": 5,
+        "type": "Fire"
+      },
+      {
+        "name": "Thunder",
+        "damage": 35,
+        "description": "An electric attack",
+        "mp_cost": 10,
+        "type": "Electric"
+      },
+      {
+        "name": "Hyper Beam",
+        "damage": 50,
+        "description": "A powerful beam",
+        "mp_cost": 20,
+        "type": "Normal"
+      }
+    ],
+    "menu_options": [
+      {
+        "value": "Fight",
+        "description": "进入战斗模式，选择技能攻击敌人"
+      },
+      {
+        "value": "Bag",
+        "description": "打开背包，使用道具"
+      },
+      {
+        "value": "Pokemon",
+        "description": "查看宝可梦状态和队伍"
+      },
+      {
+        "value": "Run",
+        "description": "尝试逃跑，结束战斗"
+      }
+    ],
+    "ui_colors": {
+      "enemy_area": "#ff6b6b",
+      "player_area": "#4ECDC4",
+      "background": "#000000",
+      "text_primary": "#FFFFFF",
+      "text_secondary": "#CCCCCC",
+      "accent": "#4ECDC4",
+      "warning": "#ff6b6b",
+      "success": "#51cf66"
+    },
+    "fonts": {
+      "title": "bold 32px Arial",
+      "subtitle": "bold 18px Arial",
+      "body": "16px Arial",
+      "menu": "14px Arial",
+      "small": "12px Arial"
+    },
+    "z_index_layers": {
+      "background": 150,
+      "ui_elements": 200,
+      "menus": 250,
+      "indicators": 300,
+      "debug": 100
+    }
+  }
+} 
