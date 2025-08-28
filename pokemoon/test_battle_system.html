@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Pokemoon Battle System Test</title>
+    <script src="target/js/release/build/pokemoon.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>Pokemoon Battle System Test</h1>
+    <p>测试基于MoonBit的战斗系统函数</p>
+    
+    <div class="test-section">
+        <h2>伤害计算测试</h2>
+        <button class="test-button" onclick="testDamageCalculation()">测试伤害计算</button>
+        <div id="damage-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>技能效果测试</h2>
+        <button class="test-button" onclick="testMoveEffects()">测试技能效果</button>
+        <div id="move-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>状态效果测试</h2>
+        <button class="test-button" onclick="testStatusEffects()">测试状态效果</button>
+        <div id="status-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>属性修改测试</h2>
+        <button class="test-button" onclick="testStatModifiers()">测试属性修改</button>
+        <div id="stat-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>字符串转换测试</h2>
+        <button class="test-button" onclick="testStringConversions()">测试字符串转换</button>
+        <div id="string-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>全面测试</h2>
+        <button class="test-button" onclick="testAllFunctions()">运行所有测试</button>
+        <div id="all-result"></div>
+    </div>
+
+    <script>
+        function displayResult(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+        
+        function testDamageCalculation() {
+            try {
+                const params = {
+                    base_power: 80,
+                    attacker_level: 50,
+                    attacker_attack: 100,
+                    defender_defense: 80,
+                    type_effectiveness: 1.5,
+                    stab_bonus: 1.5,
+                    critical_hit: false,
+                    weather_modifier: 1.0,
+                    other_modifiers: 1.0
+                };
+                
+                const damage = KrystalRay$pokemoon$$calculate_damage(params);
+                const message = `伤害计算成功！<br>
+                    基础威力: ${params.base_power}<br>
+                    攻击者等级: ${params.attacker_level}<br>
+                    攻击力: ${params.attacker_attack}<br>
+                    防御力: ${params.defender_defense}<br>
+                    属性相性: ${params.type_effectiveness}<br>
+                    STAB加成: ${params.stab_bonus}<br>
+                    最终伤害: ${damage}`;
+                
+                displayResult('damage-result', message, 'success');
+            } catch (error) {
+                displayResult('damage-result', `错误: ${error.message}`, 'error');
+            }
+        }
+        
+        function testMoveEffects() {
+            try {
+                const fireDamage = KrystalRay$pokemoon$$apply_move_effect_simple(100, "Fire");
+                const waterDamage = KrystalRay$pokemoon$$apply_move_effect_simple(100, "Water");
+                const electricDamage = KrystalRay$pokemoon$$apply_move_effect_simple(100, "Electric");
+                const grassDamage = KrystalRay$pokemoon$$apply_move_effect_simple(100, "Grass");
+                
+                const message = `技能效果测试成功！<br>
+                    火系伤害 (100基础): ${fireDamage}<br>
+                    水系伤害 (100基础): ${waterDamage}<br>
+                    电系伤害 (100基础): ${electricDamage}<br>
+                    草系伤害 (100基础): ${grassDamage}`;
+                
+                displayResult('move-result', message, 'success');
+            } catch (error) {
+                displayResult('move-result', `错误: ${error.message}`, 'error');
+            }
+        }
+        
+        function testStatusEffects() {
+            try {
+                const fireBurn = KrystalRay$pokemoon$$should_apply_status_effect("Fire", "burn");
+                const electricParalysis = KrystalRay$pokemoon$$should_apply_status_effect("Electric", "paralysis");
+                const iceFreeze = KrystalRay$pokemoon$$should_apply_status_effect("Ice", "freeze");
+                const poisonPoison = KrystalRay$pokemoon$$should_apply_status_effect("Poison", "poison");
+                const psychicConfusion = KrystalRay$pokemoon$$should_apply_status_effect("Psychic", "confusion");
+                
+                const message = `状态效果测试成功！<br>
+                    火系灼烧: ${fireBurn}<br>
+                    电系麻痹: ${electricParalysis}<br>
+                    冰系冰冻: ${iceFreeze}<br>
+                    毒系中毒: ${poisonPoison}<br>
+                    超能系混乱: ${psychicConfusion}`;
+                
+                displayResult('status-result', message, 'success');
+            } catch (error) {
+                displayResult('status-result', `错误: ${error.message}`, 'error');
+            }
+        }
+        
+        function testStatModifiers() {
+            try {
+                const boosted = KrystalRay$pokemoon$$calculate_stat_modifier(100, 20, true);
+                const reduced = KrystalRay$pokemoon$$calculate_stat_modifier(100, 20, false);
+                const reducedMin = KrystalRay$pokemoon$$calculate_stat_modifier(10, 20, false);
+                
+                const message = `属性修改测试成功！<br>
+                    基础属性: 100<br>
+                    提升20点: ${boosted}<br>
+                    降低20点: ${reduced}<br>
+                    降低到最小值 (10-20): ${reducedMin}`;
+                
+                displayResult('stat-result', message, 'success');
+            } catch (error) {
+                displayResult('stat-result', `错误: ${error.message}`, 'error');
+            }
+        }
+        
+        function testStringConversions() {
+            try {
+                const statusStr = KrystalRay$pokemoon$$status_to_string("burn");
+                const effectStr = KrystalRay$pokemoon$$effect_type_to_string("Move");
+                const damageStr = KrystalRay$pokemoon$$damage_type_to_string("Physical");
+                
+                const message = `字符串转换测试成功！<br>
+                    状态"burn": ${statusStr}<br>
+                    效果类型"Move": ${effectStr}<br>
+                    伤害类型"Physical": ${damageStr}`;
+                
+                displayResult('string-result', message, 'success');
+            } catch (error) {
+                displayResult('string-result', `错误: ${error.message}`, 'error');
+            }
+        }
+        
+        function testAllFunctions() {
+            try {
+                // 运行MoonBit的测试函数
+                KrystalRay$pokemoon$$test_battle_system();
+                
+                const message = `所有函数测试完成！<br>
+                    请查看浏览器控制台查看详细输出。<br>
+                    如果看到中文输出，说明MoonBit函数工作正常。`;
+                
+                displayResult('all-result', message, 'success');
+            } catch (error) {
+                displayResult('all-result', `错误: ${error.message}`, 'error');
+            }
+        }
+        
+        // 页面加载完成后的初始化
+        window.addEventListener('load', function() {
+            console.log('Pokemoon战斗系统测试页面加载完成');
+            console.log('可用的MoonBit函数:');
+            console.log('- KrystalRay$pokemoon$$calculate_damage');
+            console.log('- KrystalRay$pokemoon$$apply_move_effect_simple');
+            console.log('- KrystalRay$pokemoon$$should_apply_status_effect');
+            console.log('- KrystalRay$pokemoon$$calculate_stat_modifier');
+            console.log('- KrystalRay$pokemoon$$status_to_string');
+            console.log('- KrystalRay$pokemoon$$effect_type_to_string');
+            console.log('- KrystalRay$pokemoon$$damage_type_to_string');
+            console.log('- KrystalRay$pokemoon$$test_battle_system');
+        });
+    </script>
+</body>
+</html> 

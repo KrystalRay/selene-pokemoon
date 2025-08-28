@@ -17,16 +17,6 @@
 // 记录和管理战斗中的所有事件和日志
 
 ///|
-// 日志级别枚举
-pub enum LogLevel {
-  Debug
-  Info
-  Warning
-  Error
-  Critical
-} derive(Show, Eq)
-
-///|
 // 日志类型枚举
 pub enum LogType {
   Battle
@@ -39,17 +29,6 @@ pub enum LogType {
 } derive(Show, Eq)
 
 ///|
-// 日志条目
-pub struct LogEntry {
-  id : String
-  timestamp : Int
-  level : LogLevel
-  log_type : LogType
-  message : String
-  data : Option[String]
-} derive(Show)
-
-///|
 // 战斗日志管理器
 pub struct BattleLogManager {
   entries : Array[LogEntry]
@@ -57,24 +36,6 @@ pub struct BattleLogManager {
   log_level : LogLevel
   auto_format : Bool
 } derive(Show)
-
-///|
-// 创建新的日志条目
-pub fn create_log_entry(
-  level : LogLevel,
-  log_type : LogType,
-  message : String,
-  data : Option[String]
-) -> LogEntry {
-  LogEntry::{
-    id: "log_" + level.to_string() + "_" + log_type.to_string(),
-    timestamp: 0, // 实际应该使用系统时间
-    level: level,
-    log_type: log_type,
-    message: message,
-    data: data
-  }
-}
 
 ///|
 // 创建新的日志管理器
@@ -103,15 +64,15 @@ pub fn add_log_entry(
 }
 
 ///|
-// 获取所有日志条目
-pub fn get_all_log_entries(manager : BattleLogManager) -> Array[LogEntry] {
+// 获取日志条目
+pub fn get_log_entries(manager : BattleLogManager) -> Array[LogEntry] {
   manager.entries
 }
 
 ///|
 // 设置日志级别
 pub fn set_log_level(
-  manager : BattleLogManager, 
+  manager : BattleLogManager,
   level : LogLevel
 ) -> BattleLogManager {
   BattleLogManager::{
@@ -123,16 +84,30 @@ pub fn set_log_level(
 }
 
 ///|
+// 设置最大条目数
+pub fn set_max_entries(
+  manager : BattleLogManager,
+  max : Int
+) -> BattleLogManager {
+  BattleLogManager::{
+    entries: manager.entries,
+    max_entries: max,
+    log_level: manager.log_level,
+    auto_format: manager.auto_format
+  }
+}
+
+///|
 // 设置自动格式化
 pub fn set_auto_format(
-  manager : BattleLogManager, 
-  enabled : Bool
+  manager : BattleLogManager,
+  auto : Bool
 ) -> BattleLogManager {
   BattleLogManager::{
     entries: manager.entries,
     max_entries: manager.max_entries,
     log_level: manager.log_level,
-    auto_format: enabled
+    auto_format: auto
   }
 }
 
@@ -148,31 +123,34 @@ pub fn clear_log(manager : BattleLogManager) -> BattleLogManager {
 }
 
 ///|
-// 获取日志条目数量
-pub fn get_log_entry_count(manager : BattleLogManager) -> Int {
-  manager.entries.length()
+// 获取日志统计信息
+pub fn get_log_stats(manager : BattleLogManager) -> Map[String, Int] {
+  let stats = Map::new()
+  stats.set("total_entries", manager.entries.length())
+  stats.set("max_entries", manager.max_entries)
+  stats
 }
 
 ///|
 // 格式化日志条目为字符串
 pub fn format_log_entry(entry : LogEntry) -> String {
   let level_str = match entry.level {
-    LogLevel::Debug => "DEBUG"
     LogLevel::Info => "INFO"
+    LogLevel::Success => "SUCCESS"
     LogLevel::Warning => "WARN"
     LogLevel::Error => "ERROR"
-    LogLevel::Critical => "CRIT"
   }
   
-  let type_str = match entry.log_type {
-    LogType::Battle => "BATTLE"
-    LogType::Move => "MOVE"
-    LogType::Status => "STATUS"
-    LogType::Item => "ITEM"
-    LogType::Weather => "WEATHER"
-    LogType::Terrain => "TERRAIN"
-    LogType::System => "SYSTEM"
-  }
+  "[" + level_str + "] " + entry.message
+}
+
+///|
+// 测试函数
+pub fn test_battle_log() -> Unit {
+  let manager = create_battle_log_manager()
   
-  "[" + level_str + "][" + type_str + "] " + entry.message
+  println("Battle log manager created successfully")
+  println("Log level: " + manager.log_level.to_string())
+  println("Max entries: " + manager.max_entries.to_string())
+  println("Auto format: " + manager.auto_format.to_string())
 } 

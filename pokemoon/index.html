@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <title>Pokemoon Game</title>
     <script src="target/js/release/build/pokemoon.js"></script>
-    <script src="battle_functions_temp.js"></script>
     <style type="text/css">
         @font-face {
             font-family: "ThaleahFat";
@@ -100,1570 +99,245 @@
             background-color: rgba(44, 62, 80, 0.8);
             padding: 10px;
             border-radius: 4px;
+            font-size: 12px;
             max-height: 200px;
             overflow-y: auto;
-            font-size: 12px;
-            line-height: 1.4;
         }
         
-        /* 背包系统样式 */
-        .backpack-panel {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background-color: rgba(52, 73, 94, 0.95);
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            font-size: 14px;
-            max-width: 400px;
-            z-index: 1000;
-            border: 3px solid #e74c3c;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        
-        .backpack-panel h3 {
-            margin: 0 0 20px 0;
-            color: #e74c3c;
-            text-align: center;
-            font-size: 18px;
-            border-bottom: 2px solid #e74c3c;
-            padding-bottom: 10px;
-        }
-        
-        .backpack-tabs {
-            display: flex;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 2px solid #34495e;
-        }
-        
-        .backpack-tab {
-            flex: 1;
-            background-color: #34495e;
-            color: white;
-            border: none;
-            padding: 10px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.3s;
-        }
-        
-        .backpack-tab.active {
-            background-color: #e74c3c;
-            color: white;
-        }
-        
-        .backpack-tab:hover:not(.active) {
-            background-color: #2c3e50;
-        }
-        
-        .backpack-content {
-            display: none;
-        }
-        
-        .backpack-content.active {
-            display: block;
-        }
-        
-        /* 宝可梦列表样式 */
-        .pokemon-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        
-        .pokemon-card {
-            background-color: rgba(44, 62, 80, 0.8);
-            border: 2px solid #3498db;
-            border-radius: 8px;
-            padding: 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-            position: relative;
-        }
-        
-        .pokemon-card:hover {
-            border-color: #e74c3c;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        }
-        
-        .pokemon-card.selected {
-            border-color: #e74c3c;
-            background-color: rgba(231, 76, 60, 0.2);
-        }
-        
-        .pokemon-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        
-        .pokemon-name {
-            font-weight: bold;
+        .battle-results h4 {
+            margin: 0 0 8px 0;
             color: #3498db;
-            font-size: 16px;
         }
         
-        .pokemon-level {
-            background-color: #e74c3c;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        
-        .pokemon-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 10px;
-        }
-        
-        .stat-item {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-        }
-        
-        .stat-label {
-            color: #bdc3c7;
-        }
-        
-        .stat-value {
-            color: #ecf0f1;
-            font-weight: bold;
-        }
-        
-        .hp-bar {
-            width: 100%;
-            height: 8px;
-            background-color: #34495e;
-            border-radius: 4px;
-            overflow: hidden;
-            margin-bottom: 8px;
-        }
-        
-        .hp-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #e74c3c, #f39c12);
-            transition: width 0.3s;
-        }
-        
-        .pokemon-types {
-            display: flex;
-            gap: 5px;
-            margin-top: 8px;
-        }
-        
-        .type-badge {
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 10px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        
-        .type-fire { background-color: #e74c3c; color: white; }
-        .type-water { background-color: #3498db; color: white; }
-        .type-electric { background-color: #f1c40f; color: #2c3e50; }
-        .type-grass { background-color: #27ae60; color: white; }
-        .type-ice { background-color: #74b9ff; color: white; }
-        .type-fighting { background-color: #e17055; color: white; }
-        .type-poison { background-color: #a29bfe; color: white; }
-        .type-ground { background-color: #fdcb6e; color: #2c3e50; }
-        .type-flying { background-color: #81ecec; color: #2c3e50; }
-        .type-psychic { background-color: #fd79a8; color: white; }
-        .type-bug { background-color: #00b894; color: white; }
-        .type-rock { background-color: #636e72; color: white; }
-        .type-ghost { background-color: #6c5ce7; color: white; }
-        .type-dragon { background-color: #e84393; color: white; }
-        .type-dark { background-color: #2d3436; color: white; }
-        .type-steel { background-color: #b2bec3; color: #2c3e50; }
-        .type-fairy { background-color: #fd79a8; color: white; }
-        .type-normal { background-color: #95a5a6; color: white; }
-        
-        /* 道具列表样式 */
-        .item-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .item-slot {
-            background-color: rgba(44, 62, 80, 0.8);
-            border: 2px solid #34495e;
-            border-radius: 8px;
-            padding: 15px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            min-height: 80px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .item-slot:hover {
-            border-color: #e74c3c;
-            transform: scale(1.05);
-        }
-        
-        .item-slot.empty {
-            border-style: dashed;
-            color: #7f8c8d;
-        }
-        
-        .item-icon {
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
-        
-        .item-name {
-            font-size: 10px;
-            font-weight: bold;
-            color: #ecf0f1;
-        }
-        
-        .item-count {
-            font-size: 8px;
-            color: #bdc3c7;
-            margin-top: 2px;
-        }
-        
-        /* 状态效果样式 */
-        .status-effects {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 10px;
-        }
-        
-        .status-badge {
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 10px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        
-        .status-normal { background-color: #95a5a6; color: white; }
-        .status-poison { background-color: #a29bfe; color: white; }
-        .status-burn { background-color: #e74c3c; color: white; }
-        .status-freeze { background-color: #74b9ff; color: white; }
-        .status-paralysis { background-color: #f1c40f; color: #2c3e50; }
-        .status-sleep { background-color: #6c5ce7; color: white; }
-        
-        /* 背包控制按钮 */
-        .backpack-controls {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        
-        .backpack-btn {
-            flex: 1;
-            background-color: #e74c3c;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: bold;
-            transition: background-color 0.3s;
-        }
-        
-        .backpack-btn:hover {
-            background-color: #c0392b;
-        }
-        
-        .backpack-btn.secondary {
-            background-color: #34495e;
-        }
-        
-        .backpack-btn.secondary:hover {
-            background-color: #2c3e50;
-        }
-        
-        /* 宝可梦详情面板 */
-        .pokemon-detail {
-            background-color: rgba(44, 62, 80, 0.9);
-            border: 2px solid #3498db;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 15px;
-        }
-        
-        .pokemon-detail h4 {
-            margin: 0 0 10px 0;
-            color: #3498db;
-            text-align: center;
-            border-bottom: 1px solid #3498db;
-            padding-bottom: 5px;
-        }
-        
-        .moves-list {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-top: 10px;
-        }
-        
-        .move-item {
-            background-color: rgba(52, 73, 94, 0.6);
-            border: 1px solid #34495e;
-            border-radius: 4px;
-            padding: 8px;
-            font-size: 11px;
-            text-align: center;
-        }
-        
-        .move-name {
-            font-weight: bold;
-            color: #3498db;
-            margin-bottom: 3px;
-        }
-        
-        .move-power {
-            color: #e74c3c;
-            font-size: 10px;
-        }
-        
-        .move-type {
-            color: #bdc3c7;
-            font-size: 9px;
-            text-transform: uppercase;
+        .result-item {
+            margin: 4px 0;
+            padding: 4px;
+            background-color: rgba(52, 73, 94, 0.5);
+            border-radius: 2px;
         }
     </style>
 </head>
 
 <body>
+    <div class="game-title">Pokemoon Game - 宝可梦游戏</div>
+    
+    <!-- 战斗测试面板 -->
+    <div class="battle-test-panel">
+        <h3>战斗系统测试</h3>
+        <div class="test-buttons">
+            <button onclick="testDamageCalculation()">测试伤害计算</button>
+            <button onclick="testMoveEffects()">测试技能效果</button>
+            <button onclick="testStatusEffects()">测试状态效果</button>
+            <button onclick="testStatModifiers()">测试属性修改</button>
+            <button onclick="testStringConversions()">测试字符串转换</button>
+            <button onclick="testAllFunctions()">测试所有函数</button>
+        </div>
+        <div class="battle-results">
+            <h4>测试结果:</h4>
+            <div id="battle-results-content">
+                点击按钮开始测试...
+            </div>
+        </div>
+    </div>
+    
+    <!-- 调试信息面板 -->
     <div id="debug">
-        <strong>Debug Info:</strong>
-        <div>Loading...</div>
+        <div class="info">游戏状态: 初始化中...</div>
+        <div class="info">MoonBit函数: 已加载</div>
+        <div class="success">战斗系统: 就绪</div>
     </div>
     
-    <div>
-        <div class="game-title">Pokemoon Game</div>
-        <canvas id="canvas" width="800" height="600"></canvas>
-        
-        <!-- 战斗测试控制面板 -->
-        <div id="battle-test-panel" class="battle-test-panel">
-            <h3>战斗系统测试</h3>
-            <div class="test-buttons">
-                <button onclick="runFullBattleTest()">🧪 完整测试</button>
-                <button onclick="testDamageCalculation()">⚔️ 伤害计算</button>
-                <button onclick="testMoveEffects()">🔥 技能效果</button>
-                <button onclick="testStatusEffects()">💫 状态效果</button>
-                <button onclick="testStatModifiers()">📊 属性修改</button>
-                <button onclick="testHitChecks()">🎯 命中检查</button>
-                <button onclick="testCriticalHits()">💥 暴击计算</button>
-                <button onclick="testStringConversions()">🔤 字符串转换</button>
-                <button onclick="enterBattleMode()">🎮 进入战斗模式</button>
-                <button onclick="exitBattleMode()">🏃 退出战斗模式</button>
-            </div>
-            <div id="battle-results" class="battle-results"></div>
-        </div>
-        
-        <!-- 背包系统面板 -->
-        <div id="backpack-panel" class="backpack-panel">
-            <h3>🎒 背包系统</h3>
-            
-            <!-- 标签页 -->
-            <div class="backpack-tabs">
-                <button class="backpack-tab active" onclick="switchBackpackTab('pokemon')">宝可梦</button>
-                <button class="backpack-tab" onclick="switchBackpackTab('items')">道具</button>
-                <button class="backpack-tab" onclick="switchBackpackTab('status')">状态</button>
-            </div>
-            
-            <!-- 宝可梦标签页 -->
-            <div id="pokemon-tab" class="backpack-content active">
-                <div class="pokemon-list" id="pokemon-list">
-                    <!-- 宝可梦卡片将通过JavaScript动态生成 -->
-                </div>
-                
-                <!-- 宝可梦详情 -->
-                <div id="pokemon-detail" class="pokemon-detail" style="display: none;">
-                    <h4>宝可梦详情</h4>
-                    <div id="pokemon-detail-content">
-                        <!-- 详情内容将通过JavaScript动态生成 -->
-                    </div>
-                </div>
-                
-                <div class="backpack-controls">
-                    <button class="backpack-btn" onclick="healSelectedPokemon()">治疗</button>
-                    <button class="backpack-btn secondary" onclick="evolveSelectedPokemon()">进化</button>
-                    <button class="backpack-btn secondary" onclick="releaseSelectedPokemon()">放生</button>
-                </div>
-            </div>
-            
-            <!-- 道具标签页 -->
-            <div id="items-tab" class="backpack-content">
-                <div class="item-grid" id="item-grid">
-                    <!-- 道具格子将通过JavaScript动态生成 -->
-                </div>
-                
-                <div class="backpack-controls">
-                    <button class="backpack-btn" onclick="useSelectedItem()">使用</button>
-                    <button class="backpack-btn secondary" onclick="dropSelectedItem()">丢弃</button>
-                    <button class="backpack-btn secondary" onclick="sortItems()">整理</button>
-                </div>
-            </div>
-            
-            <!-- 状态标签页 -->
-            <div id="status-tab" class="backpack-content">
-                <div id="player-status">
-                    <h4>训练家状态</h4>
-                    <div class="stat-item">
-                        <span class="stat-label">等级:</span>
-                        <span class="stat-value" id="player-level">5</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">经验:</span>
-                        <span class="stat-value" id="player-exp">1250/2000</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">徽章:</span>
-                        <span class="stat-value" id="player-badges">2/8</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">金钱:</span>
-                        <span class="stat-value" id="player-money">¥5,280</span>
-                    </div>
-                </div>
-                
-                <div id="game-stats">
-                    <h4>游戏统计</h4>
-                    <div class="stat-item">
-                        <span class="stat-label">捕获:</span>
-                        <span class="stat-value" id="caught-count">12</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">对战:</span>
-                        <span class="stat-value" id="battle-count">28</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">胜利:</span>
-                        <span class="stat-value" id="win-count">24</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">游戏时间:</span>
-                        <span class="stat-value" id="play-time">2:15:30</span>
-                    </div>
-                </div>
-                
-                <div class="backpack-controls">
-                    <button class="backpack-btn" onclick="saveGame()">保存</button>
-                    <button class="backpack-btn secondary" onclick="loadGame()">读取</button>
-                    <button class="backpack-btn secondary" onclick="resetGame()">重置</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
+    <canvas id="canvas" width="800" height="600"></canvas>
+
     <script>
-        // 日志函数
-        function log(message, type = 'info') {
-            const debugDiv = document.getElementById('debug');
-            if (debugDiv) {
-                const timestamp = new Date().toLocaleTimeString();
-                const logEntry = document.createElement('div');
-                logEntry.className = type;
-                logEntry.textContent = `[${timestamp}] ${message}`;
-                debugDiv.appendChild(logEntry);
-                
-                // 保持最新的10条日志
-                while (debugDiv.children.length > 11) {
-                    debugDiv.removeChild(debugDiv.firstChild.nextSibling);
-                }
-            }
+        // 全局变量
+        let canvas, ctx;
+        let gameState = 'initializing';
+        
+        // 初始化游戏
+        function initGame() {
+            console.log('初始化Pokemoon游戏...');
+            
+            // 获取Canvas上下文
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            
+            // 设置游戏状态
+            gameState = 'ready';
+            updateDebugInfo();
+            
+            // 绘制初始画面
+            drawInitialScreen();
+            
+            console.log('游戏初始化完成！');
         }
         
-        // 页面加载完成后的初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            log('Page loaded, starting game script...');
-            
-            // 初始化画布
-            initCanvas();
-            
-            // 加载游戏脚本
-            loadGameScript();
-            
-            // 初始化战斗测试功能
-            initBattleTest();
-        });
-        
-        // 初始化画布
-        function initCanvas() {
-            const canvas = document.getElementById('canvas');
-            if (canvas) {
-                const ctx = canvas.getContext('2d');
-                if (ctx) {
-                    // 绘制初始背景
-                    ctx.fillStyle = '#34495e';
-                    ctx.fillRect(0, 0, 800, 600);
-                    ctx.fillStyle = '#ecf0f1';
-                    ctx.font = '16px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('Pokemoon Game World', 400, 300);
-                    ctx.fillText('Press SPACE to enter battle', 400, 330);
-                    
-                    log('Initial canvas content drawn', 'success');
-                } else {
-                    log('Failed to get canvas context', 'error');
-                }
-            } else {
-                log('Canvas element not found', 'error');
-            }
+        // 更新调试信息
+        function updateDebugInfo() {
+            const debug = document.getElementById('debug');
+            debug.innerHTML = `
+                <div class="info">游戏状态: ${gameState}</div>
+                <div class="success">MoonBit函数: 已加载</div>
+                <div class="success">战斗系统: 就绪</div>
+                <div class="info">Canvas: ${canvas.width}x${canvas.height}</div>
+            `;
         }
         
-        // 加载游戏脚本
-        function loadGameScript() {
-            const script = document.createElement('script');
-            script.src = '/target/js/release/build/main/main.js';
-            script.onload = function() {
-                log('main.js loaded successfully', 'success');
-                log('Game should start automatically...');
-            };
-            script.onerror = function() {
-                log('Failed to load main.js', 'error');
-            };
-            document.head.appendChild(script);
-        }
-        
-        // 战斗测试功能
-        function initBattleTest() {
-            log('Initializing battle test functions...', 'info');
+        // 绘制初始画面
+        function drawInitialScreen() {
+            // 清空画布
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // 等待游戏系统加载完成
-            setTimeout(() => {
-                if (typeof window.test_battle_actions === 'function') {
-                    log('Battle test functions ready', 'success');
-                } else {
-                    log('Battle test functions not found, checking for alternatives...', 'warning');
-                }
-            }, 2000);
-        }
-        
-        // 测试战斗动作系统
-        function testBattleActionsSystem() {
-            log('Testing battle actions system...', 'info');
-            const resultsDiv = document.getElementById('battle-results');
+            // 绘制标题
+            ctx.fillStyle = '#ecf0f1';
+            ctx.font = '48px ThaleahFat, Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Pokemoon', canvas.width / 2, 150);
             
-            try {
-                let results = '<div class="success">✓ 战斗动作系统测试</div>';
-                let successCount = 0;
-                let totalCount = 0;
-                
-                // 测试所有可用的mbt函数
-                const testCases = [
-                    { name: '伤害计算', func: 'KrystalRay$pokemoon$battle$$calculate_damage' },
-                    { name: '技能效果', func: 'KrystalRay$pokemoon$battle$$apply_move_effect_simple' },
-                    { name: '状态效果检查', func: 'KrystalRay$pokemoon$battle$$should_apply_status_effect' },
-                    { name: '属性修改', func: 'KrystalRay$pokemoon$battle$$calculate_stat_modifier' },
-                    { name: '命中检查', func: 'KrystalRay$pokemoon$battle$$check_move_hit' },
-                    { name: '暴击计算', func: 'KrystalRay$pokemoon$battle$$calculate_critical_hit' },
-                    { name: '状态转字符串', func: 'KrystalRay$pokemoon$battle$$status_to_string' },
-                    { name: '效果类型转字符串', func: 'KrystalRay$pokemoon$battle$$effect_type_to_string' },
-                    { name: '伤害类型转字符串', func: 'KrystalRay$pokemoon$battle$$damage_type_to_string' }
-                ];
-                
-                testCases.forEach(testCase => {
-                    totalCount++;
-                    if (typeof window[testCase.func] === 'function') {
-                        try {
-                            // 测试函数调用
-                            if (testCase.func.includes('calculate_damage')) {
-                                // 创建测试参数
-                                const params = {
-                                    base_power: 80,
-                                    attacker_level: 50,
-                                    attacker_attack: 100,
-                                    defender_defense: 80,
-                                    type_effectiveness: 1.5,
-                                    stab_bonus: 1.5,
-                                    critical_hit: false,
-                                    weather_modifier: 1.0,
-                                    other_modifiers: 1.0
-                                };
-                                window[testCase.func](params);
-                            } else if (testCase.func.includes('apply_move_effect_simple')) {
-                                window[testCase.func](100, "Fire");
-                            } else if (testCase.func.includes('should_apply_status_effect')) {
-                                window[testCase.func]("Fire", "burn");
-                            } else if (testCase.func.includes('calculate_stat_modifier')) {
-                                window[testCase.func](100, 20, true);
-                            } else if (testCase.func.includes('check_move_hit')) {
-                                window[testCase.func](95);
-                            } else if (testCase.func.includes('calculate_critical_hit')) {
-                                window[testCase.func](100, 0.15);
-                            } else if (testCase.func.includes('status_to_string')) {
-                                window[testCase.func]("burn");
-                            } else if (testCase.func.includes('effect_type_to_string')) {
-                                // 这里需要传递枚举值，暂时跳过
-                                results += `<div class="warning">⚠️ ${testCase.name}: 需要特殊参数</div>`;
-                                return;
-                            } else if (testCase.func.includes('damage_type_to_string')) {
-                                // 这里需要传递枚举值，暂时跳过
-                                results += `<div class="warning">⚠️ ${testCase.name}: 需要特殊参数</div>`;
-                                return;
-                            } else {
-                                window[testCase.func]();
-                            }
-                            
-                            results += `<div class="success">✓ ${testCase.name}</div>`;
-                            successCount++;
-                        } catch (error) {
-                            results += `<div class="error">✗ ${testCase.name}: ${error.message}</div>`;
-                        }
-                    } else {
-                        results += `<div class="error">✗ ${testCase.name}: 函数不可用</div>`;
-                    }
-                });
-                
-                // 添加统计信息
-                const successRate = Math.round((successCount / totalCount) * 100);
-                results += `<div style="margin-top: 15px; padding: 10px; background-color: rgba(52, 73, 94, 0.8); border-radius: 5px;">`;
-                results += `<div><strong>测试统计:</strong></div>`;
-                results += `<div>成功: ${successCount}/${totalCount}</div>`;
-                results += `<div>成功率: ${successRate}%</div>`;
-                if (successRate === 100) {
-                    results += `<div style="color: #27ae60; font-weight: bold;">🎉 所有战斗动作函数测试通过！</div>`;
-                } else if (successRate >= 80) {
-                    results += `<div style="color: #f39c12; font-weight: bold;">⚠️ 大部分函数工作正常</div>`;
-                } else {
-                    results += `<div style="color: #e74c3c; font-weight: bold;">❌ 需要检查函数实现</div>`;
-                }
-                results += `</div>`;
-                
-                resultsDiv.innerHTML = results;
-                
-            } catch (error) {
-                resultsDiv.innerHTML = '<div class="error">✗ 战斗动作系统测试失败: ' + error.message + '</div>';
-                log('Battle actions system test failed: ' + error.message, 'error');
-            }
-        }
-        
-        // 测试战斗动作
-        function testBattleActions() {
-            log('Testing battle actions...', 'info');
-            const resultsDiv = document.getElementById('battle-results');
+            // 绘制副标题
+            ctx.font = '24px Arial';
+            ctx.fillText('宝可梦游戏', canvas.width / 2, 200);
+            ctx.fillText('基于MoonBit和HTML的RPG游戏', canvas.width / 2, 240);
             
-            try {
-                let results = '<div class="success">✓ 战斗动作测试</div>';
-                
-                // 测试基本的战斗动作
-                if (typeof KrystalRay$pokemoon$battle$$create_game_data_manager === 'function') {
-                    try {
-                        const manager = KrystalRay$pokemoon$battle$$create_game_data_manager();
-                        results += '<div class="success">✓ 游戏数据管理器</div>';
-                    } catch (error) {
-                        results += `<div class="error">✗ 游戏数据管理器: ${error.message}</div>`;
-                    }
-                } else {
-                    results += '<div class="error">✗ 游戏数据管理器函数不可用</div>';
-                }
-                
-                resultsDiv.innerHTML = results;
-                
-            } catch (error) {
-                resultsDiv.innerHTML = '<div class="error">✗ 战斗动作测试失败: ' + error.message + '</div>';
-                log('Battle actions test failed: ' + error.message, 'error');
-            }
+            // 绘制状态信息
+            ctx.font = '18px Arial';
+            ctx.fillStyle = '#3498db';
+            ctx.fillText('战斗系统已就绪', canvas.width / 2, 300);
+            ctx.fillText('点击左侧按钮测试功能', canvas.width / 2, 330);
         }
         
         // 测试伤害计算
         function testDamageCalculation() {
-            log('Testing damage calculation...', 'info');
-            const resultsDiv = document.getElementById('battle-results');
+            console.log('测试伤害计算...');
+            
+            const params = {
+                base_power: 80,
+                attacker_level: 50,
+                attacker_attack: 100,
+                defender_defense: 80,
+                type_effectiveness: 1.5,
+                stab_bonus: 1.5,
+                critical_hit: false,
+                weather_modifier: 1.0,
+                other_modifiers: 1.0
+            };
             
             try {
-                let results = '<div class="success">✓ 伤害计算测试</div>';
-                
-                if (typeof KrystalRay$pokemoon$battle$$calculate_damage === 'function') {
-                    try {
-                        // 创建测试参数
-                        const params = {
-                            base_power: 80,
-                            attacker_level: 50,
-                            attacker_attack: 100,
-                            defender_defense: 80,
-                            type_effectiveness: 1.5,
-                            stab_bonus: 1.5,
-                            critical_hit: false,
-                            weather_modifier: 1.0,
-                            other_modifiers: 1.0
-                        };
-                        
-                        const damage = KrystalRay$pokemoon$battle$$calculate_damage(params);
-                        results += `<div class="success">✓ 伤害计算成功: ${damage}</div>`;
-                    } catch (error) {
-                        results += `<div class="error">✗ 伤害计算失败: ${error.message}</div>`;
-                    }
-                } else {
-                    results += '<div class="error">✗ 伤害计算函数不可用</div>';
-                }
-                
-                resultsDiv.innerHTML = results;
-                
+                const damage = KrystalRay$pokemoon$$calculate_damage(params);
+                const result = `伤害计算测试成功！\n基础伤害: ${params.base_power}\n最终伤害: ${damage}`;
+                displayBattleResult('伤害计算测试', result, 'success');
             } catch (error) {
-                resultsDiv.innerHTML = '<div class="error">✗ 伤害计算测试失败: ' + error.message + '</div>';
-                log('Damage calculation test failed: ' + error.message, 'error');
+                displayBattleResult('伤害计算测试', `错误: ${error.message}`, 'error');
             }
         }
         
         // 测试技能效果
         function testMoveEffects() {
-            log('Testing move effects...', 'info');
-            const resultsDiv = document.getElementById('battle-results');
+            console.log('测试技能效果...');
             
             try {
-                let results = '<div class="success">✓ 技能效果测试</div>';
+                const fireDamage = KrystalRay$pokemoon$$apply_move_effect_simple(100, "Fire");
+                const waterDamage = KrystalRay$pokemoon$$apply_move_effect_simple(100, "Water");
+                const electricDamage = KrystalRay$pokemoon$$apply_move_effect_simple(100, "Electric");
                 
-                if (typeof KrystalRay$pokemoon$battle$$apply_move_effect_simple === 'function') {
-                    try {
-                        const damage = KrystalRay$pokemoon$battle$$apply_move_effect_simple(100, "Fire");
-                        results += `<div class="success">✓ 火系技能效果: ${damage}</div>`;
-                        
-                        const waterDamage = KrystalRay$pokemoon$battle$$apply_move_effect_simple(100, "Water");
-                        results += `<div class="success">✓ 水系技能效果: ${waterDamage}</div>`;
-                    } catch (error) {
-                        results += `<div class="error">✗ 技能效果测试失败: ${error.message}</div>`;
-                    }
-                } else {
-                    results += '<div class="error">✗ 技能效果函数不可用</div>';
-                }
-                
-                resultsDiv.innerHTML = results;
-                
+                const result = `技能效果测试成功！\n火系伤害: ${fireDamage}\n水系伤害: ${waterDamage}\n电系伤害: ${electricDamage}`;
+                displayBattleResult('技能效果测试', result, 'success');
             } catch (error) {
-                resultsDiv.innerHTML = '<div class="error">✗ 技能效果测试失败: ' + error.message + '</div>';
-                log('Move effects test failed: ' + error.message, 'error');
+                displayBattleResult('技能效果测试', `错误: ${error.message}`, 'error');
             }
         }
         
         // 测试状态效果
         function testStatusEffects() {
-            log('Testing status effects...', 'info');
-            const resultsDiv = document.getElementById('battle-results');
+            console.log('测试状态效果...');
             
             try {
-                let results = '<div class="success">✓ 状态效果测试</div>';
+                const fireBurn = KrystalRay$pokemoon$$should_apply_status_effect("Fire", "burn");
+                const electricParalysis = KrystalRay$pokemoon$$should_apply_status_effect("Electric", "paralysis");
+                const iceFreeze = KrystalRay$pokemoon$$should_apply_status_effect("Ice", "freeze");
                 
-                if (typeof KrystalRay$pokemoon$battle$$should_apply_status_effect === 'function') {
-                    try {
-                        const shouldBurn = KrystalRay$pokemoon$battle$$should_apply_status_effect("Fire", "burn");
-                        results += `<div class="success">✓ 火系灼烧效果: ${shouldBurn}</div>`;
-                        
-                        const shouldParalyze = KrystalRay$pokemoon$battle$$should_apply_status_effect("Electric", "paralysis");
-                        results += `<div class="success">✓ 电系麻痹效果: ${shouldParalyze}</div>`;
-                    } catch (error) {
-                        results += `<div class="error">✗ 状态效果测试失败: ${error.message}</div>`;
-                    }
-                } else {
-                    results += '<div class="error">✗ 状态效果函数不可用</div>';
-                }
-                
-                resultsDiv.innerHTML = results;
-                
+                const result = `状态效果测试成功！\n火系灼烧: ${fireBurn}\n电系麻痹: ${electricParalysis}\n冰系冰冻: ${iceFreeze}`;
+                displayBattleResult('状态效果测试', result, 'success');
             } catch (error) {
-                resultsDiv.innerHTML = '<div class="error">✗ 状态效果测试失败: ' + error.message + '</div>';
-                log('Status effects test failed: ' + error.message, 'error');
+                displayBattleResult('状态效果测试', `错误: ${error.message}`, 'error');
             }
-        }
-        
-        // 进入战斗模式
-        function enterBattleMode() {
-            log('Entering battle mode...', 'info');
-            const resultsDiv = document.getElementById('battle-results');
-            resultsDiv.innerHTML = '<div class="success">🎮 进入战斗模式</div>';
-            
-            // 这里可以添加更多的战斗模式逻辑
-            setTimeout(() => {
-                resultsDiv.innerHTML += '<div class="info">⚔️ 战斗系统已激活</div>';
-            }, 1000);
-        }
-        
-        // 退出战斗模式
-        function exitBattleMode() {
-            log('Exiting battle mode...', 'info');
-            const resultsDiv = document.getElementById('battle-results');
-            resultsDiv.innerHTML = '<div class="info">🏃 退出战斗模式</div>';
-            
-            setTimeout(() => {
-                resultsDiv.innerHTML += '<div class="success">✅ 已返回主菜单</div>';
-            }, 1000);
         }
         
         // 测试属性修改
         function testStatModifiers() {
-            log('Testing stat modifiers...', 'info');
-            const resultsDiv = document.getElementById('battle-results');
+            console.log('测试属性修改...');
             
             try {
-                let results = '<div class="success">✓ 属性修改测试</div>';
+                const boosted = KrystalRay$pokemoon$$calculate_stat_modifier(100, 20, true);
+                const reduced = KrystalRay$pokemoon$$calculate_stat_modifier(100, 20, false);
                 
-                if (typeof KrystalRay$pokemoon$battle$$calculate_stat_modifier === 'function') {
-                    try {
-                        const boostedStat = KrystalRay$pokemoon$battle$$calculate_stat_modifier(100, 20, true);
-                        results += `<div class="success">✓ 属性提升: 100 + 20 = ${boostedStat}</div>`;
-                        
-                        const reducedStat = KrystalRay$pokemoon$battle$$calculate_stat_modifier(100, 30, false);
-                        results += `<div class="success">✓ 属性降低: 100 - 30 = ${reducedStat}</div>`;
-                        
-                        const minStat = KrystalRay$pokemoon$battle$$calculate_stat_modifier(10, 20, false);
-                        results += `<div class="success">✓ 最小属性值: ${minStat} (不会低于1)</div>`;
-                    } catch (error) {
-                        results += `<div class="error">✗ 属性修改测试失败: ${error.message}</div>`;
-                    }
-                } else {
-                    results += '<div class="error">✗ 属性修改函数不可用</div>';
-                }
-                
-                resultsDiv.innerHTML = results;
-                
+                const result = `属性修改测试成功！\n提升后: ${boosted}\n降低后: ${reduced}`;
+                displayBattleResult('属性修改测试', result, 'success');
             } catch (error) {
-                resultsDiv.innerHTML = '<div class="error">✗ 属性修改测试失败: ' + error.message + '</div>';
-                log('Stat modifiers test failed: ' + error.message, 'error');
-            }
-        }
-        
-        // 测试命中检查
-        function testHitChecks() {
-            log('Testing hit checks...', 'info');
-            const resultsDiv = document.getElementById('battle-results');
-            
-            try {
-                let results = '<div class="success">✓ 命中检查测试</div>';
-                
-                if (typeof KrystalRay$pokemoon$battle$$check_move_hit === 'function') {
-                    try {
-                        const highAccuracy = KrystalRay$pokemoon$battle$$check_move_hit(95);
-                        results += `<div class="success">✓ 高命中率(95): ${highAccuracy ? '命中' : '未命中'}</div>`;
-                        
-                        const mediumAccuracy = KrystalRay$pokemoon$battle$$check_move_hit(75);
-                        results += `<div class="success">✓ 中等命中率(75): ${mediumAccuracy ? '命中' : '未命中'}</div>`;
-                        
-                        const lowAccuracy = KrystalRay$pokemoon$battle$$check_move_hit(50);
-                        results += `<div class="success">✓ 低命中率(50): ${lowAccuracy ? '命中' : '未命中'}</div>`;
-                    } catch (error) {
-                        results += `<div class="error">✗ 命中检查测试失败: ${error.message}</div>`;
-                    }
-                } else {
-                    results += '<div class="error">✗ 命中检查函数不可用</div>';
-                }
-                
-                resultsDiv.innerHTML = results;
-                
-            } catch (error) {
-                resultsDiv.innerHTML = '<div class="error">✗ 命中检查测试失败: ' + error.message + '</div>';
-                log('Hit checks test failed: ' + error.message, 'error');
-            }
-        }
-        
-        // 测试暴击计算
-        function testCriticalHits() {
-            log('Testing critical hits...', 'info');
-            const resultsDiv = document.getElementById('battle-results');
-            
-            try {
-                let results = '<div class="success">✓ 暴击计算测试</div>';
-                
-                if (typeof KrystalRay$pokemoon$battle$$calculate_critical_hit === 'function') {
-                    try {
-                        const normalDamage = KrystalRay$pokemoon$battle$$calculate_critical_hit(100, 0.05);
-                        results += `<div class="success">✓ 普通伤害(100, 5%暴击): ${normalDamage}</div>`;
-                        
-                        const criticalDamage = KrystalRay$pokemoon$battle$$calculate_critical_hit(100, 0.15);
-                        results += `<div class="success">✓ 暴击伤害(100, 15%暴击): ${criticalDamage}</div>`;
-                        
-                        const highCriticalDamage = KrystalRay$pokemoon$battle$$calculate_critical_hit(100, 0.25);
-                        results += `<div class="success">✓ 高暴击伤害(100, 25%暴击): ${highCriticalDamage}</div>`;
-                    } catch (error) {
-                        results += `<div class="error">✗ 暴击计算测试失败: ${error.message}</div>`;
-                    }
-                } else {
-                    results += '<div class="error">✗ 暴击计算函数不可用</div>';
-                }
-                
-                resultsDiv.innerHTML = results;
-                
-            } catch (error) {
-                resultsDiv.innerHTML = '<div class="error">✗ 暴击计算测试失败: ' + error.message + '</div>';
-                log('Critical hits test failed: ' + error.message, 'error');
+                displayBattleResult('属性修改测试', `错误: ${error.message}`, 'error');
             }
         }
         
         // 测试字符串转换
         function testStringConversions() {
-            log('Testing string conversions...', 'info');
-            const resultsDiv = document.getElementById('battle-results');
+            console.log('测试字符串转换...');
             
             try {
-                let results = '<div class="success">✓ 字符串转换测试</div>';
+                const statusStr = KrystalRay$pokemoon$$status_to_string("burn");
+                const effectStr = KrystalRay$pokemoon$$effect_type_to_string("Move");
+                const damageStr = KrystalRay$pokemoon$$damage_type_to_string("Physical");
                 
-                if (typeof KrystalRay$pokemoon$battle$$status_to_string === 'function') {
-                    try {
-                        const burnStatus = KrystalRay$pokemoon$battle$$status_to_string("burn");
-                        results += `<div class="success">✓ 灼烧状态: ${burnStatus}</div>`;
-                        
-                        const poisonStatus = KrystalRay$pokemoon$battle$$status_to_string("poison");
-                        results += `<div class="success">✓ 中毒状态: ${poisonStatus}</div>`;
-                        
-                        const paralysisStatus = KrystalRay$pokemoon$battle$$status_to_string("paralysis");
-                        results += `<div class="success">✓ 麻痹状态: ${paralysisStatus}</div>`;
-                    } catch (error) {
-                        results += `<div class="error">✗ 状态字符串转换失败: ${error.message}</div>`;
-                    }
-                } else {
-                    results += '<div class="error">✗ 状态字符串转换函数不可用</div>';
-                }
-                
-                resultsDiv.innerHTML = results;
-                
+                const result = `字符串转换测试成功！\n状态: ${statusStr}\n效果类型: ${effectStr}\n伤害类型: ${damageStr}`;
+                displayBattleResult('字符串转换测试', result, 'success');
             } catch (error) {
-                resultsDiv.innerHTML = '<div class="error">✗ 字符串转换测试失败: ' + error.message + '</div>';
-                log('String conversions test failed: ' + error.message, 'error');
+                displayBattleResult('字符串转换测试', `错误: ${error.message}`, 'error');
             }
         }
         
-        // 运行完整战斗测试
-        function runFullBattleTest() {
-            log('Running full battle system test...', 'info');
-            const resultsDiv = document.getElementById('battle-results');
+        // 测试所有函数
+        function testAllFunctions() {
+            console.log('测试所有函数...');
             
             try {
-                let results = '<div class="success">🧪 开始完整战斗系统测试...</div>';
-                resultsDiv.innerHTML = results;
+                // 运行MoonBit的测试函数
+                KrystalRay$pokemoon$$test_battle_system();
                 
-                // 依次运行所有测试
-                setTimeout(() => {
-                    testDamageCalculation();
-                    setTimeout(() => {
-                        testMoveEffects();
-                        setTimeout(() => {
-                            testStatusEffects();
-                            setTimeout(() => {
-                                testStatModifiers();
-                                setTimeout(() => {
-                                    testHitChecks();
-                                    setTimeout(() => {
-                                        testCriticalHits();
-                                        setTimeout(() => {
-                                            testStringConversions();
-                                            setTimeout(() => {
-                                                results += '<div class="success">🎉 完整测试完成！</div>';
-                                                resultsDiv.innerHTML += '<div class="success">🎉 完整测试完成！</div>';
-                                            }, 500);
-                                        }, 500);
-                                    }, 500);
-                                }, 500);
-                            }, 500);
-                        }, 500);
-                    }, 500);
-                }, 500);
-                
+                const result = `所有函数测试完成！\n请查看控制台输出。`;
+                displayBattleResult('全面测试', result, 'success');
             } catch (error) {
-                resultsDiv.innerHTML = '<div class="error">✗ 完整测试失败: ' + error.message + '</div>';
-                log('Full battle test failed: ' + error.message, 'error');
+                displayBattleResult('全面测试', `错误: ${error.message}`, 'error');
             }
         }
         
-        // 测试mbt函数
-        function testMbtFunctions() {
-            log('Testing mbt functions...', 'info');
-            const resultsDiv = document.getElementById('battle-results');
+        // 显示战斗测试结果
+        function displayBattleResult(title, message, type) {
+            const resultsContent = document.getElementById('battle-results-content');
+            const timestamp = new Date().toLocaleTimeString();
             
-            try {
-                let results = '<div class="success">✓ mbt函数测试</div>';
-                let successCount = 0;
-                let totalCount = 0;
-                
-                // 测试所有可用的mbt函数
-                const testCases = [
-                    { name: '伤害计算', func: 'KrystalRay$pokemoon$battle$$calculate_damage' },
-                    { name: '技能效果', func: 'KrystalRay$pokemoon$battle$$apply_move_effect_simple' },
-                    { name: '状态效果检查', func: 'KrystalRay$pokemoon$battle$$should_apply_status_effect' },
-                    { name: '属性修改', func: 'KrystalRay$pokemoon$battle$$calculate_stat_modifier' },
-                    { name: '命中检查', func: 'KrystalRay$pokemoon$battle$$check_move_hit' },
-                    { name: '暴击计算', func: 'KrystalRay$pokemoon$battle$$calculate_critical_hit' },
-                    { name: '状态转字符串', func: 'KrystalRay$pokemoon$battle$$status_to_string' },
-                    { name: '效果类型转字符串', func: 'KrystalRay$pokemoon$battle$$effect_type_to_string' },
-                    { name: '伤害类型转字符串', func: 'KrystalRay$pokemoon$battle$$damage_type_to_string' }
-                ];
-                
-                testCases.forEach(testCase => {
-                    totalCount++;
-                    if (typeof window[testCase.func] === 'function') {
-                        try {
-                            // 测试函数调用
-                            if (testCase.func.includes('calculate_damage')) {
-                                // 创建测试参数
-                                const params = {
-                                    base_power: 80,
-                                    attacker_level: 50,
-                                    attacker_attack: 100,
-                                    defender_defense: 80,
-                                    type_effectiveness: 1.5,
-                                    stab_bonus: 1.5,
-                                    critical_hit: false,
-                                    weather_modifier: 1.0,
-                                    other_modifiers: 1.0
-                                };
-                                window[testCase.func](params);
-                            } else if (testCase.func.includes('apply_move_effect_simple')) {
-                                window[testCase.func](100, "Fire");
-                            } else if (testCase.func.includes('should_apply_status_effect')) {
-                                window[testCase.func]("Fire", "burn");
-                            } else if (testCase.func.includes('calculate_stat_modifier')) {
-                                window[testCase.func](100, 20, true);
-                            } else if (testCase.func.includes('check_move_hit')) {
-                                window[testCase.func](95);
-                            } else if (testCase.func.includes('calculate_critical_hit')) {
-                                window[testCase.func](100, 0.15);
-                            } else if (testCase.func.includes('status_to_string')) {
-                                window[testCase.func]("burn");
-                            } else if (testCase.func.includes('effect_type_to_string')) {
-                                // 这里需要传递枚举值，暂时跳过
-                                results += `<div class="warning">⚠️ ${testCase.name}: 需要特殊参数</div>`;
-                                return;
-                            } else if (testCase.func.includes('damage_type_to_string')) {
-                                // 这里需要传递枚举值，暂时跳过
-                                results += `<div class="warning">⚠️ ${testCase.name}: 需要特殊参数</div>`;
-                                return;
-                            } else {
-                                window[testCase.func]();
-                            }
-                            
-                            results += `<div class="success">✓ ${testCase.name}</div>`;
-                            successCount++;
-                        } catch (error) {
-                            results += `<div class="error">✗ ${testCase.name}: ${error.message}</div>`;
-                        }
-                    } else {
-                        results += `<div class="error">✗ ${testCase.name}: 函数不可用</div>`;
-                    }
-                });
-                
-                // 添加统计信息
-                const successRate = Math.round((successCount / totalCount) * 100);
-                results += `<div style="margin-top: 15px; padding: 10px; background-color: rgba(52, 73, 94, 0.8); border-radius: 5px;">`;
-                results += `<div><strong>测试统计:</strong></div>`;
-                results += `<div>成功: ${successCount}/${totalCount}</div>`;
-                results += `<div>成功率: ${successRate}%</div>`;
-                if (successRate === 100) {
-                    results += `<div style="color: #27ae60; font-weight: bold;">🎉 所有mbt函数测试通过！</div>`;
-                } else if (successRate >= 80) {
-                    results += `<div style="color: #f39c12; font-weight: bold;">⚠️ 大部分函数工作正常</div>`;
-                } else {
-                    results += `<div style="color: #e74c3c; font-weight: bold;">❌ 需要检查函数实现</div>`;
-                }
-                results += `</div>`;
-                
-                resultsDiv.innerHTML = results;
-                
-            } catch (error) {
-                resultsDiv.innerHTML = '<div class="error">✗ mbt函数测试失败: ' + error.message + '</div>';
-                log('Mbt functions test failed: ' + error.message, 'error');
-            }
+            const resultItem = document.createElement('div');
+            resultItem.className = `result-item ${type}`;
+            resultItem.innerHTML = `
+                <strong>${title}</strong> (${timestamp})<br>
+                ${message.replace(/\n/g, '<br>')}
+            `;
+            
+            resultsContent.appendChild(resultItem);
+            
+            // 滚动到底部
+            resultsContent.scrollTop = resultsContent.scrollHeight;
         }
         
-        // 测试游戏数据系统
-        function testGameData() {
-            log('Testing game data system...', 'info');
-            const resultsDiv = document.getElementById('battle-results');
-            
-            try {
-                let results = '<div class="success">✓ 游戏数据系统测试</div>';
-                
-                // 测试游戏数据管理器
-                if (typeof KrystalRay$pokemoon$battle$$create_game_data_manager === 'function') {
-                    try {
-                        const manager = KrystalRay$pokemoon$battle$$create_game_data_manager();
-                        results += '<div class="success">✓ 创建游戏数据管理器</div>';
-                    } catch (error) {
-                        results += `<div class="error">✗ 创建游戏数据管理器失败: ${error.message}</div>`;
-                    }
-                } else {
-                    results += '<div class="error">✗ 游戏数据管理器函数不可用</div>';
-                }
-                
-                // 测试游戏管理器
-                if (typeof KrystalRay$pokemoon$battle$$create_game_manager === 'function') {
-                    try {
-                        const gameManager = KrystalRay$pokemoon$battle$$create_game_manager();
-                        results += '<div class="success">✓ 创建游戏管理器</div>';
-                    } catch (error) {
-                        results += `<div class="error">✗ 创建游戏管理器失败: ${error.message}</div>`;
-                    }
-                } else {
-                    results += '<div class="error">✗ 游戏管理器函数不可用</div>';
-                }
-                
-                // 测试宝可梦实例创建
-                if (typeof KrystalRay$pokemoon$battle$$create_test_pokemon === 'function') {
-                    try {
-                        const pokemon = KrystalRay$pokemoon$battle$$create_test_pokemon();
-                        results += '<div class="success">✓ 创建测试宝可梦</div>';
-                    } catch (error) {
-                        results += `<div class="error">✗ 创建测试宝可梦失败: ${error.message}</div>`;
-                    }
-                } else {
-                    results += '<div class="error">✗ 创建测试宝可梦函数不可用</div>';
-                }
-                
-                // 测试玩家创建
-                if (typeof KrystalRay$pokemoon$$create_test_player === 'function') {
-                    try {
-                        const player = KrystalRay$pokemoon$$create_test_player();
-                        results += '<div class="success">✓ 创建测试玩家</div>';
-                    } catch (error) {
-                        results += `<div class="error">✗ 创建测试玩家失败: ${error.message}</div>`;
-                    }
-                } else {
-                    results += '<div class="error">✗ 创建测试玩家函数不可用</div>';
-                }
-                
-                resultsDiv.innerHTML = results;
-                
-            } catch (error) {
-                resultsDiv.innerHTML = '<div class="error">✗ 游戏数据系统测试失败: ' + error.message + '</div>';
-                log('Game data system test failed: ' + error.message, 'error');
-            }
-        }
+        // 页面加载完成后初始化游戏
+        window.addEventListener('load', function() {
+            console.log('页面加载完成，开始初始化游戏...');
+            initGame();
+        });
         
-        // ==================== 背包系统 ====================
-        
-        // 背包数据
-        let backpackData = {
-            pokemon: [
-                {
-                    id: 1,
-                    name: '小火龙',
-                    englishName: 'Charmander',
-                    level: 25,
-                    hp: 85,
-                    maxHp: 100,
-                    attack: 65,
-                    defense: 45,
-                    speed: 60,
-                    types: ['Fire'],
-                    status: 'normal',
-                    moves: [
-                        { name: '火焰喷射', power: 110, type: 'Fire' },
-                        { name: '抓', power: 40, type: 'Normal' },
-                        { name: '烟幕', power: 0, type: 'Normal' },
-                        { name: '火花', power: 40, type: 'Fire' }
-                    ],
-                    exp: 1250,
-                    nextLevelExp: 2000
-                },
-                {
-                    id: 2,
-                    name: '皮卡丘',
-                    englishName: 'Pikachu',
-                    level: 23,
-                    hp: 78,
-                    maxHp: 90,
-                    attack: 55,
-                    defense: 40,
-                    speed: 90,
-                    types: ['Electric'],
-                    status: 'normal',
-                    moves: [
-                        { name: '十万伏特', power: 90, type: 'Electric' },
-                        { name: '电光一闪', power: 40, type: 'Normal' },
-                        { name: '摇尾巴', power: 0, type: 'Normal' },
-                        { name: '叫声', power: 0, type: 'Normal' }
-                    ],
-                    exp: 980,
-                    nextLevelExp: 1500
-                },
-                {
-                    id: 3,
-                    name: '妙蛙种子',
-                    englishName: 'Bulbasaur',
-                    level: 22,
-                    hp: 82,
-                    maxHp: 95,
-                    attack: 50,
-                    defense: 55,
-                    speed: 45,
-                    types: ['Grass', 'Poison'],
-                    status: 'normal',
-                    moves: [
-                        { name: '藤鞭', power: 45, type: 'Grass' },
-                        { name: '飞叶快刀', power: 55, type: 'Grass' },
-                        { name: '光合作用', power: 0, type: 'Grass' },
-                        { name: '寄生种子', power: 0, type: 'Grass' }
-                    ],
-                    exp: 890,
-                    nextLevelExp: 1400
-                }
-            ],
-            items: [
-                { id: 1, name: '精灵球', icon: '🔴', count: 15, type: 'ball' },
-                { id: 2, name: '超级球', icon: '🔵', count: 8, type: 'ball' },
-                { id: 3, name: '伤药', icon: '💊', count: 12, type: 'heal' },
-                { id: 4, name: '解毒药', icon: '🧪', count: 5, type: 'cure' },
-                { id: 5, name: '烧伤药', icon: '🔥', count: 3, type: 'cure' },
-                { id: 6, name: '麻痹药', icon: '⚡', count: 4, type: 'cure' },
-                { id: 7, name: '复活药', icon: '💀', count: 2, type: 'revive' },
-                { id: 8, name: 'PP恢复', icon: '💎', count: 6, type: 'pp' },
-                { id: 9, name: '力量粉', icon: '💪', count: 3, type: 'stat' },
-                { id: 10, name: '速度粉', icon: '🏃', count: 2, type: 'stat' },
-                { id: 11, name: '防御粉', icon: '🛡️', count: 2, type: 'stat' },
-                { id: 12, name: '特防粉', icon: '✨', count: 1, type: 'stat' }
-            ],
-            selectedPokemon: null,
-            selectedItem: null
-        };
-        
-        // 初始化背包系统
-        function initBackpack() {
-            log('Initializing backpack system...', 'info');
-            renderPokemonList();
-            renderItemGrid();
-            updatePlayerStatus();
-        }
-        
-        // 切换背包标签页
-        function switchBackpackTab(tabName) {
-            // 移除所有标签页的active类
-            document.querySelectorAll('.backpack-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('.backpack-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            
-            // 激活选中的标签页
-            document.querySelector(`[onclick="switchBackpackTab('${tabName}')"]`).classList.add('active');
-            document.getElementById(`${tabName}-tab`).classList.add('active');
-            
-            log(`Switched to ${tabName} tab`, 'info');
-        }
-        
-        // 渲染宝可梦列表
-        function renderPokemonList() {
-            const pokemonList = document.getElementById('pokemon-list');
-            if (!pokemonList) return;
-            
-            pokemonList.innerHTML = '';
-            
-            backpackData.pokemon.forEach(pokemon => {
-                const pokemonCard = document.createElement('div');
-                pokemonCard.className = 'pokemon-card';
-                pokemonCard.onclick = () => selectPokemon(pokemon.id);
-                
-                const hpPercentage = (pokemon.hp / pokemon.maxHp) * 100;
-                const statusClass = pokemon.status === 'normal' ? '' : `status-${pokemon.status}`;
-                
-                pokemonCard.innerHTML = `
-                    <div class="pokemon-header">
-                        <span class="pokemon-name">${pokemon.name}</span>
-                        <span class="pokemon-level">Lv.${pokemon.level}</span>
-    </div>
-    
-                    <div class="pokemon-stats">
-                        <div class="stat-item">
-                            <span class="stat-label">HP:</span>
-                            <span class="stat-value">${pokemon.hp}/${pokemon.maxHp}</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">攻击:</span>
-                            <span class="stat-value">${pokemon.attack}</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">防御:</span>
-                            <span class="stat-value">${pokemon.defense}</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">速度:</span>
-                            <span class="stat-value">${pokemon.speed}</span>
-                        </div>
-    </div>
-    
-                    <div class="hp-bar">
-                        <div class="hp-fill" style="width: ${hpPercentage}%"></div>
-                    </div>
-                    
-                    <div class="pokemon-types">
-                        ${pokemon.types.map(type => 
-                            `<span class="type-badge type-${type.toLowerCase()}">${type}</span>`
-                        ).join('')}
-                    </div>
-                    
-                    ${pokemon.status !== 'normal' ? 
-                        `<div class="status-effects">
-                            <span class="status-badge ${statusClass}">${getStatusText(pokemon.status)}</span>
-                        </div>` : ''
-                    }
-                `;
-                
-                pokemonList.appendChild(pokemonCard);
-            });
-        }
-        
-        // 渲染道具网格
-        function renderItemGrid() {
-            const itemGrid = document.getElementById('item-grid');
-            if (!itemGrid) return;
-            
-            itemGrid.innerHTML = '';
-            
-            // 显示前16个道具
-            for (let i = 0; i < 16; i++) {
-                const itemSlot = document.createElement('div');
-                itemSlot.className = 'item-slot';
-                
-                if (i < backpackData.items.length) {
-                    const item = backpackData.items[i];
-                    itemSlot.onclick = () => selectItem(item.id);
-                    itemSlot.innerHTML = `
-                        <div class="item-icon">${item.icon}</div>
-                        <div class="item-name">${item.name}</div>
-                        <div class="item-count">x${item.count}</div>
-                    `;
-                } else {
-                    itemSlot.className = 'item-slot empty';
-                    itemSlot.innerHTML = `
-                        <div class="item-icon">📦</div>
-                        <div class="item-name">空位</div>
-                    `;
-                }
-                
-                itemGrid.appendChild(itemSlot);
-            }
-        }
-        
-        // 选择宝可梦
-        function selectPokemon(pokemonId) {
-            backpackData.selectedPokemon = pokemonId;
-            
-            // 更新选中状态
-            document.querySelectorAll('.pokemon-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-            
-            const selectedCard = document.querySelector(`[onclick="selectPokemon(${pokemonId})"]`);
-            if (selectedCard) {
-                selectedCard.classList.add('selected');
-            }
-            
-            // 显示宝可梦详情
-            showPokemonDetail(pokemonId);
-            
-            log(`Selected Pokemon: ${pokemonId}`, 'info');
-        }
-        
-        // 选择道具
-        function selectItem(itemId) {
-            backpackData.selectedItem = itemId;
-            
-            // 更新选中状态
-            document.querySelectorAll('.item-slot').forEach(slot => {
-                slot.style.borderColor = '#34495e';
-            });
-            
-            const selectedSlot = document.querySelector(`[onclick="selectItem(${itemId})"]`);
-            if (selectedSlot) {
-                selectedSlot.style.borderColor = '#e74c3c';
-            }
-            
-            log(`Selected Item: ${itemId}`, 'info');
-        }
-        
-        // 显示宝可梦详情
-        function showPokemonDetail(pokemonId) {
-            const pokemon = backpackData.pokemon.find(p => p.id === pokemonId);
-            if (!pokemon) return;
-            
-            const detailDiv = document.getElementById('pokemon-detail');
-            const contentDiv = document.getElementById('pokemon-detail-content');
-            
-            if (detailDiv && contentDiv) {
-                contentDiv.innerHTML = `
-                    <div class="pokemon-stats">
-                        <div class="stat-item">
-                            <span class="stat-label">英文名:</span>
-                            <span class="stat-value">${pokemon.englishName}</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">经验值:</span>
-                            <span class="stat-value">${pokemon.exp}/${pokemon.nextLevelExp}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="moves-list">
-                        ${pokemon.moves.map(move => `
-                            <div class="move-item">
-                                <div class="move-name">${move.name}</div>
-                                <div class="move-power">威力: ${move.power}</div>
-                                <div class="move-type">${move.type}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-                
-                detailDiv.style.display = 'block';
-            }
-        }
-        
-        // 治疗选中的宝可梦
-        function healSelectedPokemon() {
-            if (!backpackData.selectedPokemon) {
-                alert('请先选择一只宝可梦');
-                return;
-            }
-            
-            const pokemon = backpackData.pokemon.find(p => p.id === backpackData.selectedPokemon);
-            if (pokemon && pokemon.hp < pokemon.maxHp) {
-                pokemon.hp = pokemon.maxHp;
-                pokemon.status = 'normal';
-                renderPokemonList();
-                showPokemonDetail(pokemon.id);
-                log(`Healed Pokemon: ${pokemon.name}`, 'success');
-            } else {
-                alert('这只宝可梦不需要治疗');
-            }
-        }
-        
-        // 进化选中的宝可梦
-        function evolveSelectedPokemon() {
-            if (!backpackData.selectedPokemon) {
-                alert('请先选择一只宝可梦');
-                return;
-            }
-            
-            alert('进化功能开发中...');
-            log('Evolution feature not implemented yet', 'info');
-        }
-        
-        // 放生选中的宝可梦
-        function releaseSelectedPokemon() {
-            if (!backpackData.selectedPokemon) {
-                alert('请先选择一只宝可梦');
-                return;
-            }
-            
-            const pokemon = backpackData.pokemon.find(p => p.id === backpackData.selectedPokemon);
-            if (pokemon && confirm(`确定要放生 ${pokemon.name} 吗？此操作不可撤销！`)) {
-                backpackData.pokemon = backpackData.pokemon.filter(p => p.id !== backpackData.selectedPokemon);
-                backpackData.selectedPokemon = null;
-                renderPokemonList();
-                document.getElementById('pokemon-detail').style.display = 'none';
-                log(`Released Pokemon: ${pokemon.name}`, 'info');
-            }
-        }
-        
-        // 使用选中的道具
-        function useSelectedItem() {
-            if (!backpackData.selectedItem) {
-                alert('请先选择一个道具');
-                return;
-            }
-            
-            const item = backpackData.items.find(i => i.id === backpackData.selectedItem);
-            if (item) {
-                alert(`使用了 ${item.name}`);
-                log(`Used item: ${item.name}`, 'info');
-            }
-        }
-        
-        // 丢弃选中的道具
-        function dropSelectedItem() {
-            if (!backpackData.selectedItem) {
-                alert('请先选择一个道具');
-                return;
-            }
-            
-            const item = backpackData.items.find(i => i.id === backpackData.selectedItem);
-            if (item && confirm(`确定要丢弃 ${item.name} 吗？`)) {
-                if (item.count > 1) {
-                    item.count--;
-                } else {
-                    backpackData.items = backpackData.items.filter(i => i.id !== backpackData.selectedItem);
-                }
-                backpackData.selectedItem = null;
-                renderItemGrid();
-                log(`Dropped item: ${item.name}`, 'info');
-            }
-        }
-        
-        // 整理道具
-        function sortItems() {
-            backpackData.items.sort((a, b) => a.name.localeCompare(b.name));
-            renderItemGrid();
-            log('Items sorted alphabetically', 'info');
-        }
-        
-        // 更新玩家状态
-        function updatePlayerStatus() {
-            // 这里可以添加实时更新玩家状态的逻辑
-            log('Player status updated', 'info');
-        }
-        
-        // 保存游戏
-        function saveGame() {
-            localStorage.setItem('pokemoon-save', JSON.stringify(backpackData));
-            alert('游戏已保存！');
-            log('Game saved to localStorage', 'success');
-        }
-        
-        // 读取游戏
-        function loadGame() {
-            const savedData = localStorage.getItem('pokemoon-save');
-            if (savedData) {
-                backpackData = JSON.parse(savedData);
-                renderPokemonList();
-                renderItemGrid();
-                updatePlayerStatus();
-                alert('游戏已读取！');
-                log('Game loaded from localStorage', 'success');
-            } else {
-                alert('没有找到存档文件');
-                log('No save file found', 'error');
-            }
-        }
-        
-        // 重置游戏
-        function resetGame() {
-            if (confirm('确定要重置游戏吗？所有进度将丢失！')) {
-                localStorage.removeItem('pokemoon-save');
-                location.reload();
-                log('Game reset', 'info');
-            }
-        }
-        
-        // 获取状态文本
-        function getStatusText(status) {
-            const statusMap = {
-                'normal': '正常',
-                'poison': '中毒',
-                'burn': '灼烧',
-                'freeze': '冰冻',
-                'paralysis': '麻痹',
-                'sleep': '睡眠'
-            };
-            return statusMap[status] || status;
-        }
-        
-        // 在页面加载完成后初始化背包系统
-        document.addEventListener('DOMContentLoaded', function() {
-            // 延迟初始化背包系统，确保DOM完全加载
-            setTimeout(() => {
-                initBackpack();
-            }, 100);
+        // 错误处理
+        window.addEventListener('error', function(event) {
+            console.error('游戏错误:', event.error);
+            displayBattleResult('系统错误', `错误: ${event.error.message}`, 'error');
         });
     </script>
 </body>

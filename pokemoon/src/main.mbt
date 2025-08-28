@@ -188,6 +188,46 @@ pub fn test_battle_system() -> Unit {
   create_test_pokemon()
   create_test_player()
   
+  // 测试战斗函数，确保它们被生成
+  let test_params = DamageParams::{
+    base_power: 80,
+    attacker_level: 50,
+    attacker_attack: 100,
+    defender_defense: 80,
+    type_effectiveness: 1.5,
+    stab_bonus: 1.5,
+    critical_hit: false,
+    weather_modifier: 1.0,
+    other_modifiers: 1.0
+  }
+  
+  let damage = calculate_damage(test_params)
+  println("测试伤害计算: " + damage.to_string())
+  
+  let simple_damage = apply_move_effect_simple(100, "Fire")
+  println("测试技能效果: " + simple_damage.to_string())
+  
+  let should_burn = should_apply_status_effect("Fire", "burn")
+  println("测试状态效果: " + should_burn.to_string())
+  
+  let modified_stat = calculate_stat_modifier(100, 20, true)
+  println("测试属性修改: " + modified_stat.to_string())
+  
+  let hit_check = check_move_hit(95)
+  println("测试命中检查: " + hit_check.to_string())
+  
+  let critical_damage = calculate_critical_hit(100, 0.15)
+  println("测试暴击计算: " + critical_damage.to_string())
+  
+  let status_str = status_to_string("burn")
+  println("测试状态转换: " + status_str)
+  
+  let effect_str = effect_type_to_string("Move")
+  println("测试效果类型转换: " + effect_str)
+  
+  let damage_str = damage_type_to_string("Physical")
+  println("测试伤害类型转换: " + damage_str)
+  
   println("=== 战斗系统测试完成 ===")
 }
 
