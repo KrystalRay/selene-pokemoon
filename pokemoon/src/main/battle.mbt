@@ -13,9 +13,7 @@
 // limitations under the License.
 
 ///|
-// 战斗系统 - 处理所有战斗相关的逻辑和界面
-
-// 战斗系统状态
+// 战斗状态枚举
 enum BattleState {
   InBattle
   NotInBattle

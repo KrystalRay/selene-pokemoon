@@ -13,14 +13,7 @@
 // limitations under the License.
 
 ///|
-// UI系统 - 处理游戏界面元素
-
-// 视口尺寸常量
-const VIEWPORT_WIDTH : Double = 800.0
-const VIEWPORT_HEIGHT : Double = 600.0
-
-// 添加结果框
-fn add_result_box(game_state : GameData) -> Unit {
+pub fn add_result_box() -> Unit {
   let box = @system.Entity::new()
   @position.positions.set(
     box,
@@ -32,7 +25,7 @@ fn add_result_box(game_state : GameData) -> Unit {
 }
 
 ///|
-fn add_score_box(game_state : GameData) -> Unit {
+pub fn add_score_box() -> Unit {
   let box = @system.Entity::new()
   @position.positions.set(box, @math.Vec2D(VIEWPORT_WIDTH / 2.0 - 24, 40))
   let text = @sprite.Sprite::new_text(game_state.score_box, @ui.UI_ZINDEX)
@@ -41,7 +34,7 @@ fn add_score_box(game_state : GameData) -> Unit {
 }
 
 ///|
-fn add_volume_button(game_state : GameData) -> Unit {
+pub fn add_volume_button() -> Unit {
   let button = @system.Entity::new()
   @position.positions.set(button, @math.Vec2D(VIEWPORT_WIDTH - 40, 18))
   let volume_on = @sprite.Sprite::new_picture(
@@ -70,10 +63,8 @@ fn add_volume_button(game_state : GameData) -> Unit {
   )
   area.on_just_released(fn(mouse_button) {
     if mouse_button == Left {
-      // 注意：这里不能直接修改game_state.volume_on，因为它是不可变的
-      // 实际应用中应该通过其他方式处理音量状态
-      // 暂时只是切换按钮显示
-      if true { // 简化处理，暂时总是显示音量开启状态
+      game_state.volume_on = !game_state.volume_on
+      if game_state.volume_on {
         @sprite.sprites.set(button, volume_on)
       } else {
         @sprite.sprites.set(button, volumn_off)

@@ -46,7 +46,7 @@ let player_walk_animation : @sprite.Animation = @sprite.Animation::new(
 )
 
 ///|
-fn add_player(game_state : GameData, pos : @math.Vec2D) -> Unit {
+fn add_player(pos : @math.Vec2D) -> Unit {
   let player_sprite = @sprite.Sprite::new_animation(player_idle_animation, 10)
   @sprite.sprites.set(game_state.player, player_sprite)
   @velocity.velocities.set(game_state.player, @math.Vec2D::zero())
@@ -78,7 +78,7 @@ const MOVE_SPEED = 2.0
 // const TILE_SIZE = 16.0
 
 ///|
-fn player_state_system(_backend : &@system.Backend, game_state : GameData) -> Unit {
+fn player_state_system(_backend : &@system.Backend) -> Unit {
   // 如果在战斗状态，不处理移动输入
   if is_in_battle() {
     // 停止玩家移动
@@ -97,14 +97,12 @@ fn player_state_system(_backend : &@system.Backend, game_state : GameData) -> Un
   if @system.is_pressed(@system.ArrowLeft) {
     new_velocity_x = -MOVE_SPEED
     is_moving = true
-    // 注意：这里不能直接修改game_state.direction，因为它是不可变的
-    // 实际应用中应该通过其他方式处理方向状态
+    game_state.direction = Direction2::Left
   }
   if @system.is_pressed(@system.ArrowRight) {
     new_velocity_x = MOVE_SPEED
     is_moving = true
-    // 注意：这里不能直接修改game_state.direction，因为它是不可变的
-    // 实际应用中应该通过其他方式处理方向状态
+    game_state.direction = Direction2::Right
   }
   if @system.is_pressed(@system.ArrowUp) {
     new_velocity_y = -MOVE_SPEED
@@ -119,8 +117,10 @@ fn player_state_system(_backend : &@system.Backend, game_state : GameData) -> Un
   @velocity.velocities[game_state.player] = @math.Vec2D(new_velocity_x, new_velocity_y)
   
   // 根据移动状态播放动画
-  // 简化方向处理，暂时使用默认方向
-  let transform = @math.Transform::new()
+  let transform = match game_state.direction {
+    Direction2::Left => @math.Transform::flip_x(32.0)
+    Direction2::Right => @math.Transform::new()
+  }
   
   if is_moving {
     @sprite.play_animation(game_state.player, player_walk_animation, transform~)
@@ -132,7 +132,7 @@ fn player_state_system(_backend : &@system.Backend, game_state : GameData) -> Un
 }
 
 ///|
-fn player_interaction_system(_backend : &@system.Backend, game_state : GameData) -> Unit {
+fn player_interaction_system(_backend : &@system.Backend) -> Unit {
   guard @position.positions.get(game_state.player) is Some(pos)
   
   // 检测与NPC的交互
@@ -180,7 +180,7 @@ fn check_item_interaction(_player_pos : @math.Vec2D) -> Unit {
 }
 
 ///|
-fn camera_follow_system(_backend : &@system.Backend, game_state : GameData) -> Unit {
+fn camera_follow_system(_backend : &@system.Backend) -> Unit {
   guard @position.positions.get(game_state.player) is Some(pos)
   
   // 让相机平滑跟随玩家，但保持俯视角度

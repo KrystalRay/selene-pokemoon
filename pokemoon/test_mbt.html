@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>MBT函数测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+        }
+        .error {
+            border-left-color: #e74c3c;
+            background-color: #fdf2f2;
+        }
+        .success {
+            border-left-color: #27ae60;
+            background-color: #f0f9f0;
+        }
+    </style>
+</head>
+<body>
+    <h1>MBT函数测试页面</h1>
+    
+    <div class="test-section">
+        <h2>基础函数测试</h2>
+        <button onclick="testBasicFunctions()">测试基础函数</button>
+        <div id="basic-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>战斗系统测试</h2>
+        <button onclick="testBattleSystem()">测试战斗系统</button>
+        <div id="battle-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>游戏管理器测试</h2>
+        <button onclick="testGameManager()">测试游戏管理器</button>
+        <div id="game-results"></div>
+    </div>
+
+    <script src="target/js/release/build/pokemoon.js"></script>
+    <script>
+        function logResult(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            container.appendChild(div);
+        }
+
+        function testBasicFunctions() {
+            const container = document.getElementById('basic-results');
+            container.innerHTML = '';
+            
+            try {
+                // 测试mbt函数是否存在
+                if (typeof KrystalRay$pokemoon$$test_battle_system === 'function') {
+                    logResult('basic-results', '✅ test_battle_system函数存在', 'success');
+                } else {
+                    logResult('basic-results', '❌ test_battle_system函数不存在', 'error');
+                }
+                
+                if (typeof KrystalRay$pokemoon$$create_game_data_manager === 'function') {
+                    logResult('basic-results', '✅ create_game_data_manager函数存在', 'success');
+                } else {
+                    logResult('basic-results', '❌ create_game_data_manager函数不存在', 'error');
+                }
+                
+                if (typeof KrystalRay$pokemoon$$create_game_manager === 'function') {
+                    logResult('basic-results', '✅ create_game_manager函数存在', 'success');
+                } else {
+                    logResult('basic-results', '❌ create_game_manager函数不存在', 'error');
+                }
+                
+                if (typeof KrystalRay$pokemoon$$create_test_pokemon === 'function') {
+                    logResult('basic-results', '✅ create_test_pokemon函数存在', 'success');
+                } else {
+                    logResult('basic-results', '❌ create_test_pokemon函数不存在', 'error');
+                }
+                
+                if (typeof KrystalRay$pokemoon$$create_test_player === 'function') {
+                    logResult('basic-results', '✅ create_test_player函数存在', 'success');
+                } else {
+                    logResult('basic-results', '❌ create_test_player函数不存在', 'error');
+                }
+                
+            } catch (error) {
+                logResult('basic-results', `❌ 测试过程中发生错误: ${error.message}`, 'error');
+            }
+        }
+
+        function testBattleSystem() {
+            const container = document.getElementById('battle-results');
+            container.innerHTML = '';
+            
+            try {
+                logResult('battle-results', '🚀 开始测试战斗系统...', 'info');
+                
+                // 调用mbt函数
+                if (typeof KrystalRay$pokemoon$$test_battle_system === 'function') {
+                    KrystalRay$pokemoon$$test_battle_system();
+                    logResult('battle-results', '✅ 战斗系统测试函数执行成功', 'success');
+                } else {
+                    logResult('battle-results', '❌ 战斗系统测试函数不存在', 'error');
+                }
+                
+            } catch (error) {
+                logResult('battle-results', `❌ 战斗系统测试失败: ${error.message}`, 'error');
+            }
+        }
+
+        function testGameManager() {
+            const container = document.getElementById('game-results');
+            container.innerHTML = '';
+            
+            try {
+                logResult('game-results', '🎮 开始测试游戏管理器...', 'info');
+                
+                // 测试各个游戏管理函数
+                if (typeof KrystalRay$pokemoon$$create_game_data_manager === 'function') {
+                    KrystalRay$pokemoon$$create_game_data_manager();
+                    logResult('game-results', '✅ 游戏数据管理器创建成功', 'success');
+                }
+                
+                if (typeof KrystalRay$pokemoon$$create_game_manager === 'function') {
+                    KrystalRay$pokemoon$$create_game_manager();
+                    logResult('game-results', '✅ 游戏管理器创建成功', 'success');
+                }
+                
+                if (typeof KrystalRay$pokemoon$$create_test_pokemon === 'function') {
+                    KrystalRay$pokemoon$$create_test_pokemon();
+                    logResult('game-results', '✅ 测试宝可梦创建成功', 'success');
+                }
+                
+                if (typeof KrystalRay$pokemoon$$create_test_player === 'function') {
+                    KrystalRay$pokemoon$$create_test_player();
+                    logResult('game-results', '✅ 测试玩家创建成功', 'success');
+                }
+                
+                logResult('game-results', '🎉 所有游戏管理器测试完成！', 'success');
+                
+            } catch (error) {
+                logResult('game-results', `❌ 游戏管理器测试失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 页面加载完成后自动运行基础测试
+        window.addEventListener('load', function() {
+            logResult('basic-results', '📋 页面加载完成，MBT函数已加载', 'info');
+            testBasicFunctions();
+        });
+    </script>
+</body>
+</html> 

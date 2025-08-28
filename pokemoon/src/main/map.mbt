@@ -21,7 +21,7 @@ fn tile_to_vec2d(tile : @tilemap.Tile, tile_size : Int) -> @math.Vec2D {
 }
 
 ///|
-fn generate_map(_backend : &@system.Backend, game_state : GameData) -> Unit {
+fn generate_map(_backend : &@system.Backend) -> Unit {
   let tilemap = @tilemap.TileMap::from_json(tilemap)
   let world_width = tilemap.map_width.to_double() *
     tilemap.tile_size.to_double()
@@ -40,7 +40,7 @@ fn generate_map(_backend : &@system.Backend, game_state : GameData) -> Unit {
   
   // 修改玩家生成位置，放在地图中心附近
   let player_start = tilemap.get_tiles_first("MaskDude")[0]
-  add_player(game_state, tile_to_vec2d(player_start, tilemap.tile_size))
+  add_player(tile_to_vec2d(player_start, tilemap.tile_size))
   
   // 移除平台游戏特有的元素
   // let flag = tilemap.get_tiles_first("Flag")[0]

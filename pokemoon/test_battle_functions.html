@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Battle Functions Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🧪 战斗函数测试页面</h1>
+    
+    <div class="test-section">
+        <h2>函数可用性测试</h2>
+        <button class="test-button" onclick="testFunctionAvailability()">测试函数可用性</button>
+        <div id="availability-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>伤害计算测试</h2>
+        <button class="test-button" onclick="testDamageCalculation()">测试伤害计算</button>
+        <div id="damage-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>技能效果测试</h2>
+        <button class="test-button" onclick="testMoveEffects()">测试技能效果</button>
+        <div id="move-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>状态效果测试</h2>
+        <button class="test-button" onclick="testStatusEffects()">测试状态效果</button>
+        <div id="status-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>完整测试</h2>
+        <button class="test-button" onclick="runFullTest()">运行完整测试</button>
+        <div id="full-results"></div>
+    </div>
+
+    <script src="battle_functions_temp.js"></script>
+    <script>
+        // 测试函数可用性
+        function testFunctionAvailability() {
+            const resultsDiv = document.getElementById('availability-results');
+            let results = '';
+            
+            const functions = [
+                'KrystalRay$pokemoon$battle$$calculate_damage',
+                'KrystalRay$pokemoon$battle$$apply_move_effect_simple',
+                'KrystalRay$pokemoon$battle$$should_apply_status_effect',
+                'KrystalRay$pokemoon$battle$$calculate_stat_modifier',
+                'KrystalRay$pokemoon$battle$$check_move_hit',
+                'KrystalRay$pokemoon$battle$$calculate_critical_hit',
+                'KrystalRay$pokemoon$battle$$status_to_string',
+                'KrystalRay$pokemoon$battle$$effect_type_to_string',
+                'KrystalRay$pokemoon$battle$$damage_type_to_string',
+                'KrystalRay$pokemoon$battle$$create_game_data_manager',
+                'KrystalRay$pokemoon$battle$$create_game_manager',
+                'KrystalRay$pokemoon$battle$$test_battle_actions'
+            ];
+            
+            let availableCount = 0;
+            functions.forEach(funcName => {
+                if (typeof window[funcName] === 'function') {
+                    results += `<div class="result success">✓ ${funcName}</div>`;
+                    availableCount++;
+                } else {
+                    results += `<div class="result error">✗ ${funcName}</div>`;
+                }
+            });
+            
+            results += `<div class="result info"><strong>总计: ${availableCount}/${functions.length} 个函数可用</strong></div>`;
+            resultsDiv.innerHTML = results;
+        }
+        
+        // 测试伤害计算
+        function testDamageCalculation() {
+            const resultsDiv = document.getElementById('damage-results');
+            
+            try {
+                const params = {
+                    base_power: 80,
+                    attacker_level: 50,
+                    attacker_attack: 100,
+                    defender_defense: 80,
+                    type_effectiveness: 1.5,
+                    stab_bonus: 1.5,
+                    critical_hit: false,
+                    weather_modifier: 1.0,
+                    other_modifiers: 1.0
+                };
+                
+                const damage = KrystalRay$pokemoon$battle$$calculate_damage(params);
+                resultsDiv.innerHTML = `
+                    <div class="result success">✓ 伤害计算成功</div>
+                    <div class="result info">基础威力: ${params.base_power}</div>
+                    <div class="result info">攻击者等级: ${params.attacker_level}</div>
+                    <div class="result info">攻击力: ${params.attacker_attack}</div>
+                    <div class="result info">防御力: ${params.defender_defense}</div>
+                    <div class="result info">类型相性: ${params.type_effectiveness}</div>
+                    <div class="result info">本系加成: ${params.stab_bonus}</div>
+                    <div class="result success"><strong>最终伤害: ${damage}</strong></div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="result error">✗ 伤害计算失败: ${error.message}</div>`;
+            }
+        }
+        
+        // 测试技能效果
+        function testMoveEffects() {
+            const resultsDiv = document.getElementById('move-results');
+            
+            try {
+                const fireDamage = KrystalRay$pokemoon$battle$$apply_move_effect_simple(100, "Fire");
+                const waterDamage = KrystalRay$pokemoon$battle$$apply_move_effect_simple(100, "Water");
+                const electricDamage = KrystalRay$pokemoon$battle$$apply_move_effect_simple(100, "Electric");
+                
+                resultsDiv.innerHTML = `
+                    <div class="result success">✓ 技能效果测试成功</div>
+                    <div class="result info">火系技能 (100基础伤害): ${fireDamage}</div>
+                    <div class="result info">水系技能 (100基础伤害): ${waterDamage}</div>
+                    <div class="result info">电系技能 (100基础伤害): ${electricDamage}</div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="result error">✗ 技能效果测试失败: ${error.message}</div>`;
+            }
+        }
+        
+        // 测试状态效果
+        function testStatusEffects() {
+            const resultsDiv = document.getElementById('status-results');
+            
+            try {
+                const fireBurn = KrystalRay$pokemoon$battle$$should_apply_status_effect("Fire", "burn");
+                const electricParalysis = KrystalRay$pokemoon$battle$$should_apply_status_effect("Electric", "paralysis");
+                const iceFreeze = KrystalRay$pokemoon$battle$$should_apply_status_effect("Ice", "freeze");
+                const waterBurn = KrystalRay$pokemoon$battle$$should_apply_status_effect("Water", "burn");
+                
+                resultsDiv.innerHTML = `
+                    <div class="result success">✓ 状态效果测试成功</div>
+                    <div class="result info">火系灼烧: ${fireBurn ? '是' : '否'}</div>
+                    <div class="result info">电系麻痹: ${electricParalysis ? '是' : '否'}</div>
+                    <div class="result info">冰系冰冻: ${iceFreeze ? '是' : '否'}</div>
+                    <div class="result info">水系灼烧: ${waterBurn ? '是' : '否'}</div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="result error">✗ 状态效果测试失败: ${error.message}</div>`;
+            }
+        }
+        
+        // 运行完整测试
+        function runFullTest() {
+            const resultsDiv = document.getElementById('full-results');
+            resultsDiv.innerHTML = '<div class="result info">🧪 开始完整测试...</div>';
+            
+            setTimeout(() => {
+                testFunctionAvailability();
+                setTimeout(() => {
+                    testDamageCalculation();
+                    setTimeout(() => {
+                        testMoveEffects();
+                        setTimeout(() => {
+                            testStatusEffects();
+                            setTimeout(() => {
+                                resultsDiv.innerHTML += '<div class="result success">🎉 完整测试完成！</div>';
+                            }, 500);
+                        }, 500);
+                    }, 500);
+                }, 500);
+            }, 500);
+        }
+        
+        // 页面加载完成后自动运行可用性测试
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(testFunctionAvailability, 100);
+        });
+    </script>
+</body>
+</html> 
