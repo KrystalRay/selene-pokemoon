@@ -73,13 +73,24 @@ pub(all) struct Picture {
 pub fn Picture::new(
   size : @math.Vec2D,
   tile_path : String,
-  transform~ : @math.Transform = @math.Transform::new(),
-  repeat~ : @system.RepeatMode = NoRepeat,
+  transform? : @math.Transform = @math.Transform::new(),
+  repeat? : @system.RepeatMode = NoRepeat,
 ) -> Picture {
   { size, tile_path, transform, repeat }
 }
 
 ///|
+/// Renders a picture sprite to the screen at the specified position using the
+/// provided backend.
+///
+/// Parameters:
+///
+/// * `backend` : The rendering backend used to draw the picture to the screen.
+/// * `picture` : The picture sprite containing the image path, size,
+///   transformation, and repeat mode information.
+/// * `pos` : The 2D position where the picture should be rendered, representing
+///   the top-left corner coordinates.
+///
 fn render_picture(
   backend : &@system.Backend,
   picture : Picture,

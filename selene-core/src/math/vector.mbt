@@ -43,6 +43,11 @@ pub fn Vec2D::update(this : Vec2D, axis : Axis, value : Double) -> Vec2D {
 }
 
 ///|
+pub fn Vec2D::clone(self : Vec2D) -> Vec2D {
+  Vec2D(self.0, self.1)
+}
+
+///|
 pub impl Add for Vec2D with op_add(this, other) {
   Vec2D(this.0 + other.0, this.1 + other.1)
 }
@@ -60,6 +65,16 @@ pub impl Neg for Vec2D with op_neg(this) {
 ///|
 pub impl Sub for Vec2D with op_sub(this, other) {
   Vec2D(this.0 - other.0, this.1 - other.1)
+}
+
+///|
+pub fn Vec2D::scalar_mul(this : Vec2D, scalar : Double) -> Vec2D {
+  Vec2D(this.0 * scalar, this.1 * scalar)
+}
+
+///|
+pub fn Vec2D::scalar_div(this : Vec2D, scalar : Double) -> Vec2D {
+  Vec2D(this.0 / scalar, this.1 / scalar)
 }
 
 ///|
@@ -84,6 +99,6 @@ pub fn Vec2D::normalize(this : Vec2D) -> Vec2D {
   if mag > 0.0 {
     Vec2D(this.0 / mag, this.1 / mag)
   } else {
-    Vec2D(1.0, 0.0) // Default direction if magnitude is zero
+    Vec2D(0.0, 0.0) // Default direction if magnitude is zero
   }
 }

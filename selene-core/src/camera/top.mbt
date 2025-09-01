@@ -12,41 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-///| 
-/// Usage of the camera system:
-/// Add the `camera_system` function to your app:
-/// ```notest
-/// app.add_system(@camera.camera_system)
-/// ```
-/// This system is included in the `@plugins.default_plugin`.
-/// Access the global `camera` variable to manipulate the camera position,
-/// limits, and attached entities. The camera system automatically updates the
-/// camera position based on the attached entity's position.
-///
-/// Attach an entity to the camera:
-/// ```notest
-/// camera.attached_entity = Some(PLAYER_ENTITY)
-/// ```
-/// Set camera limits:
-/// ```notest
-/// camera.limit_top = Some(0.0)
-/// camera.limit_bottom = Some(500.0)
-/// camera.limit_left = Some(0.0)
-/// camera.limit_right = Some(650.0)
-/// ```
-/// The position of the camera is the left-top corner of the viewport. So 
-/// if you want the camera to be centered on the attached entity, you can
-/// set the camera offset according to the entity's size:
-/// ```notest
-/// camera.offset = @math.Vec2D(PLAYER_SIZE[X] * 0.5, PLAYER_SIZE[Y] * 0.5)
-/// ```
-/// Control which axes the camera follows:
-/// ```notest
-/// camera.follow_x = false  // Disable horizontal following (for vertical-scrolling games)
-/// camera.follow_y = false  // Disable vertical following (for horizontal-scrolling games)
-/// ```
-/// 
-pub(all) struct Camera {
+///|
+priv struct Camera {
   mut position : @math.Vec2D
   mut limit_top : Double?
   mut limit_bottom : Double?
@@ -59,7 +26,138 @@ pub(all) struct Camera {
 }
 
 ///|
-pub let camera : Camera = {
+/// Returns the current position of the global camera.
+///
+/// Returns a `@math.Vec2D` representing the camera's current position
+/// coordinates.
+///
+/// Example:
+///
+/// ```notest
+/// let current_pos = @camera.get_position()
+/// println("Camera is at: (\{current_pos[X]}, \{current_pos[Y]})")
+/// ```
+///
+pub fn get_position() -> @math.Vec2D {
+  camera.position
+}
+
+///|
+/// Sets the camera's movement boundaries to constrain its position within
+/// specified limits.
+///
+/// Parameters:
+///
+/// * `top` : The topmost Y coordinate the camera can reach. If `None`, no top
+///   limit is applied.
+/// * `bottom` : The bottommost Y coordinate the camera can reach. If `None`, no
+///   bottom limit is applied.
+/// * `left` : The leftmost X coordinate the camera can reach. If `None`, no
+///   left limit is applied.
+/// * `right` : The rightmost X coordinate the camera can reach. If `None`, no
+///   right limit is applied.
+///
+/// Example:
+///
+/// ```notest
+/// // Set boundaries to keep camera within a level area
+/// @camera.set_limits(top=0.0, bottom=500.0, left=0.0, right=800.0)
+///
+/// // Set only horizontal limits, allowing unlimited vertical movement
+/// @camera.set_limits(left=0.0, right=1000.0)
+///
+/// // Remove all limits
+/// @camera.set_limits()
+/// ```
+///
+pub fn set_limits(
+  top? : Double,
+  bottom? : Double,
+  left? : Double,
+  right? : Double,
+) -> Unit {
+  camera.limit_top = top
+  camera.limit_bottom = bottom
+  camera.limit_left = left
+  camera.limit_right = right
+}
+
+///|
+/// Attaches an entity to the camera for automatic following with a specified
+/// offset.
+///
+/// Parameters:
+///
+/// * `entity` : The entity that the camera should follow.
+/// * `offset` : The positional offset from the entity's position where the
+///   camera should be positioned.
+///
+/// Example:
+///
+/// ```notest
+/// @camera.attach_entity(player_entity, @math.Vec2D(32.0, 32.0))
+/// @camera.attach_entity(enemy_entity, @math.Vec2D::zero())
+/// ```
+///
+pub fn attach_entity(entity : @system.Entity, offset : @math.Vec2D) -> Unit {
+  camera.attached_entity = Some(entity)
+  camera.offset = offset
+}
+
+///|
+/// Configures whether the camera should follow the attached entity along the
+/// X-axis.
+///
+/// Parameters:
+///
+/// * `follow` : Whether to enable X-axis following. When `true`, the camera
+///   will automatically update its X position to follow the attached entity
+///   horizontally. When `false`, the camera's X position remains fixed
+///   regardless of the entity's horizontal movement.
+///
+/// Example:
+///
+/// ```notest
+/// // Enable horizontal following
+/// @camera.set_follow_x(true)
+///
+/// // Disable horizontal following while keeping vertical following
+/// @camera.set_follow_x(false)
+/// @camera.set_follow_y(true)
+/// ```
+///
+pub fn set_follow_x(follow : Bool) -> Unit {
+  camera.follow_x = follow
+}
+
+///|
+/// Configures whether the camera should follow the attached entity along the
+/// Y-axis.
+///
+/// Parameters:
+///
+/// * `follow` : Whether to enable Y-axis following. When `true`, the camera
+///   will automatically update its Y position to follow the attached entity
+///   vertically. When `false`, the camera's Y position remains fixed regardless
+///   of the entity's vertical movement.
+///
+/// Example:
+///
+/// ```notest
+/// // Enable vertical following
+/// @camera.set_follow_y(true)
+///
+/// // Disable vertical following while keeping horizontal following
+/// @camera.set_follow_y(false)
+/// @camera.set_follow_x(true)
+/// ```
+///
+pub fn set_follow_y(follow : Bool) -> Unit {
+  camera.follow_y = follow
+}
+
+///|
+let camera : Camera = {
   position: @math.Vec2D::zero(),
   limit_bottom: None,
   limit_left: None,
@@ -111,8 +209,9 @@ pub let camera : Camera = {
 pub fn camera_system(backend : &@system.Backend) -> Unit {
   guard camera.attached_entity is Some(e) else { return }
   guard @position.positions.get(e) is Some(pos) else { return }
-  let viewport_size = backend.get_canvas_size()
-  let target_position = pos.inner() -
+  let zoom = backend.get_zoom()
+  let viewport_size = backend.get_canvas_size() * Vec2D(1 / zoom, 1 / zoom)
+  let target_position = pos.0 -
     viewport_size * @math.Vec2D(0.5, 0.5) +
     camera.offset
 

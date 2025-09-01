@@ -12,7 +12,7 @@ moon add Milky2018/selene
 
 ## Example
 
-Please check [example](https://github.com/Milky2018/selene/tree/main/example).
+Please check [examples](https://github.com/Milky2018/selene/tree/main/examples).
 
 ## Documentations and Tutorials
 
@@ -29,11 +29,10 @@ Please check [docs](https://github.com/Milky2018/selene/tree/main/docs).
 - [ ] Convex polygon collision
 - [x] Debug information
 - [x] Audio
-- [ ] Timer
+- [x] Timer
 - [ ] Webpack (selene-canvas)
-- [ ] Parent-child structure (0.12)
-- [ ] Manual atlas (0.12)
-- [ ] Visibility 
-- [ ] Transform component
-- [ ] Move-and-slide collisions
+- [ ] Parent-child structure
+- [x] Manual atlas
+- [x] Visibility 
+- [x] Move-and-slide collisions
 - [ ] Input mapping

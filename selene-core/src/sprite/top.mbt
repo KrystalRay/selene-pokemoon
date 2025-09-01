@@ -13,43 +13,42 @@
 // limitations under the License.
 
 ///|
-/// Visual element that can be rendered in the game world, containing either a
-/// picture, animation, or text along with depth ordering information.
+/// Visual element that can be rendered to the screen with depth ordering and
+/// positioning.
 ///
 /// Fields:
 ///
-/// * `sprite_type` : The visual content type (picture, animation, or text) that
-///   this sprite represents.
-/// * `zindex` : The depth layer for rendering order, where higher values are
-///   drawn on top of lower values.
+/// * `sprite_type` : The visual content of the sprite (picture, animation, or
+///   text).
+/// * `zindex` : Rendering order priority, where higher values render on top of
+///   lower values.
+/// * `visible` : Whether the sprite should be rendered to the screen.
+/// * `offset` : Position offset applied relative to the entity's position.
 ///
-/// Example:
+/// Examples:
 ///
 /// ```notest
 /// // Create an animation sprite
-/// let animation = @sprite.Animation::new("player_walk.png", max_frame=4, height=32.0, width=32.0)
-/// let sprite = @sprite.Sprite::new_animation(animation, zindex=1)
+/// let animation = @sprite.Animation::new([frame1, frame2])
+/// let sprite = @sprite.Sprite::new_animation(animation, zindex=10)
+/// sprite.visible = false // Hide the sprite
 ///
-/// // Create a picture sprite  
-/// let picture = @sprite.Picture::new(@math.Vec2D::new(64.0, 64.0), "background.png")
-/// let bg_sprite = @sprite.Sprite::new_picture(picture, zindex=0)
+/// // Create a picture sprite with offset
+/// let picture = @sprite.Picture::new(size, "path/to/image.png")
+/// let sprite = @sprite.Sprite::new_picture(picture, zindex=5, offset=@math.Vec2D::new(10.0, 20.0))
+/// inspect(sprite.zindex, content="5")
 ///
 /// // Create a text sprite
-/// let text = @sprite.Text::new("Hello World!")
-/// let text_sprite = @sprite.Sprite::new_text(text, zindex=2)
-///
-/// // Access sprite properties
-/// inspect(sprite.zindex, content="1")
-/// match sprite.sprite_type {
-///   Animation(anim) => println("Animation sprite")
-///   Picture(pic) => println("Picture sprite") 
-///   Text(txt) => println("Text sprite")
-/// }
+/// let text = @sprite.Text::new("Hello World", color="red")
+/// let sprite = @sprite.Sprite::new_text(text, zindex=1)
+/// inspect(sprite.offset.x, content="0.0") // Default offset is zero
 /// ```
 ///
 pub(all) struct Sprite {
   sprite_type : SpriteType
   zindex : Int
+  mut visible : Bool
+  offset : @math.Vec2D
 }
 
 ///|
@@ -58,23 +57,56 @@ pub let sprites : Map[@system.Entity, Sprite] = Map::new()
 ///|
 pub enum SpriteType {
   Picture(Picture)
-  Animation(Animation)
+  Animation(Animation, mut frame~ : Double)
   Text(Text)
-}
-
-///| Make an animation sprite with default animation and zindex.
-pub fn Sprite::new_animation(animation : Animation, zindex : Int) -> Sprite {
-  { sprite_type: SpriteType::Animation(animation), zindex }
+  ColorRect(ColorRect)
 }
 
 ///|
-pub fn Sprite::new_picture(picture : Picture, zindex : Int) -> Sprite {
-  { sprite_type: SpriteType::Picture(picture), zindex }
+/// Make an animation sprite with default animation and zindex.
+pub fn Sprite::from_animation(
+  animation : Animation,
+  zindex : Int,
+  offset? : @math.Vec2D = @math.Vec2D::zero(),
+) -> Sprite {
+  {
+    sprite_type: SpriteType::Animation(animation, frame=0),
+    zindex,
+    offset,
+    visible: true,
+  }
 }
 
 ///|
-pub fn Sprite::new_text(text : Text, zindex : Int) -> Sprite {
-  { sprite_type: SpriteType::Text(text), zindex }
+pub fn Sprite::from_picture(
+  picture : Picture,
+  zindex : Int,
+  offset? : @math.Vec2D = @math.Vec2D::zero(),
+) -> Sprite {
+  { sprite_type: SpriteType::Picture(picture), zindex, offset, visible: true }
+}
+
+///|
+pub fn Sprite::from_text(
+  text : Text,
+  zindex : Int,
+  offset? : @math.Vec2D = @math.Vec2D::zero(),
+) -> Sprite {
+  { sprite_type: SpriteType::Text(text), zindex, offset, visible: true }
+}
+
+///|
+pub fn Sprite::from_color_rect(
+  color_rect : ColorRect,
+  zindex : Int,
+  offset? : @math.Vec2D = @math.Vec2D::zero(),
+) -> Sprite {
+  {
+    sprite_type: SpriteType::ColorRect(color_rect),
+    zindex,
+    offset,
+    visible: true,
+  }
 }
 
 ///|
@@ -88,23 +120,35 @@ pub fn Sprite::new_text(text : Text, zindex : Int) -> Sprite {
 /// Panics if an entity has a sprite but no position component.
 ///
 pub fn render_sprite_system(backend : &@system.Backend) -> Unit {
-  let sprites = sprites
-    .to_array()
-    .filter(fn(pair) { @system.all_entities.contains(pair.0) })
+  let sprites = sprites.to_array().filter(fn(pair) { pair.0.is_alive() })
   sprites.sort_by_key(fn(pair) { pair.1.zindex })
   for sprite in sprites {
     let e = sprite.0
     let sprite = sprite.1
     guard @position.positions.get(e) is Some(pos) else { continue }
     let pos = if @ui.uis.get(e) is None {
-      pos.inner() - @camera.camera.position
+      pos.0 - @camera.get_position()
     } else {
-      pos.inner()
+      pos.0
     }
     match sprite.sprite_type {
-      SpriteType::Picture(picture) => render_picture(backend, picture, pos)
-      SpriteType::Animation(anime) => render_animation(backend, anime, pos)
-      SpriteType::Text(text) => render_text(backend, text, pos)
+      SpriteType::Picture(picture) if sprite.visible =>
+        render_picture(backend, picture, pos + sprite.offset)
+      SpriteType::Animation(anime, frame~) as animation_sprite => {
+        let new_frame = render_animation(
+          backend,
+          anime,
+          frame,
+          pos + sprite.offset,
+          sprite.visible,
+        )
+        animation_sprite.frame = new_frame
+      }
+      SpriteType::Text(text) if sprite.visible =>
+        render_text(backend, text, pos + sprite.offset)
+      SpriteType::ColorRect(color_rect) if sprite.visible =>
+        render_color_rect(backend, color_rect, pos + sprite.offset)
+      _ => ()
     }
   }
 }

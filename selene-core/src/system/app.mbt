@@ -53,6 +53,8 @@ const DEFAULT_FPS : UInt = 60
 pub(all) struct App {
   canvas_height : Double
   canvas_width : Double
+  zoom : Double
+  image_smooth : Bool
   fps : UInt
   systems : Array[(System, Schedule, String)]
   plugins : Array[Plugin]
@@ -64,11 +66,18 @@ pub fn App::new(backend : &Backend) -> App {
   {
     canvas_height: DEFAULT_CANVAS_HEIGHT,
     canvas_width: DEFAULT_CANVAS_WIDTH,
+    zoom: 1.0,
+    image_smooth: true,
     fps: DEFAULT_FPS,
     systems: [],
     plugins: [],
     backend,
   }
+}
+
+///|
+pub fn App::with_image_smooth(self : App, image_smooth : Bool) -> App {
+  { ..self, image_smooth, }
 }
 
 ///|
@@ -84,6 +93,11 @@ pub fn App::with_canvas_width(self : App, width : Double) -> App {
 ///|
 pub fn App::with_fps(self : App, fps : UInt) -> App {
   { ..self, fps, }
+}
+
+///|
+pub fn App::with_zoom(self : App, zoom : Double) -> App {
+  { ..self, zoom, }
 }
 
 ///|
@@ -123,7 +137,7 @@ pub fn App::add_plugin(self : App, plugin : Plugin) -> App {
 pub fn App::add_system(
   self : App,
   system : System,
-  schedule~ : Schedule = Update,
+  schedule? : Schedule = Update,
   system_name? : String,
 ) -> App {
   let system_name = match system_name {
@@ -145,8 +159,10 @@ pub fn App::run(self : App) -> Unit {
     self.canvas_width,
     self.canvas_height,
     self.fps,
+    self.image_smooth,
+    self.zoom,
   )
   self.backend.register_key_events(pressed_keys)
-  self.backend.register_mouse_events(mouse)
+  self.backend.register_mouse_events(mouse, mouse_movement)
   run_game()
 }

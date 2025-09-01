@@ -19,17 +19,17 @@
 ///
 pub struct CollisionLayer(UInt) derive(Eq)
 
-///| 
+///|
 /// The `CollisionMask` struct represents a mask that defines which collision layers
 /// a collision object can interact with. It is used to filter collisions based on
 /// the layers of the objects involved in the collision.
 /// 
-pub struct CollisionMask(Array[CollisionLayer]) // FIXME: Use `UInt` and bitwise operations can obtain higher performance.
+pub struct CollisionMask(Array[CollisionLayer])
 
 ///|
 let collision_layer_generator : Ref[UInt] = { val: 0 }
 
-///| 
+///|
 /// Creates a new `CollisionLayer` with a unique identifier.
 /// 
 pub fn CollisionLayer::new() -> CollisionLayer {
@@ -39,6 +39,34 @@ pub fn CollisionLayer::new() -> CollisionLayer {
 }
 
 ///|
+/// Global registry that maps entities to their assigned collision layers.
+///
+/// This registry maintains the association between entities and their collision
+/// layers, allowing the collision system to determine which layer each entity
+/// belongs to for collision detection and filtering purposes. Entities can be
+/// assigned to different collision layers to control how they interact with
+/// other entities in the collision system.
+///
+/// Example:
+///
+/// ```notest
+/// let player_layer = @collision.CollisionLayer::new()
+/// let enemy_layer = @collision.CollisionLayer::new()
+///
+/// // Assign collision layers to entities
+/// @collision.collision_layers[player_entity] = player_layer
+/// @collision.collision_layers[enemy_entity] = enemy_layer
+///
+/// // Check which layer an entity belongs to
+/// match @collision.collision_layers.get(player_entity) {
+///   Some(layer) => println("Player is on collision layer")
+///   None => println("Player has no collision layer assigned")
+/// }
+/// ```
+///
+pub let collision_layers : Map[@system.Entity, CollisionLayer] = Map::new()
+
+///|
 /// Creates a new `CollisionMask` with the specified layers 
 /// that the collision object can interact with.
 /// 
@@ -46,7 +74,7 @@ pub fn CollisionMask::new(layers : Array[CollisionLayer]) -> CollisionMask {
   layers
 }
 
-///| 
+///|
 /// Creates an empty `CollisionMask` that does not interact with any layers.
 /// 
 pub fn CollisionMask::empty() -> CollisionMask {
@@ -58,5 +86,5 @@ fn CollisionMask::contains(
   self : CollisionMask,
   layer : CollisionLayer,
 ) -> Bool {
-  self.inner().contains(layer.inner())
+  self.0.contains(layer.0)
 }

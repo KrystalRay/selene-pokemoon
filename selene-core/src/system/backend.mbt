@@ -41,7 +41,7 @@ pub(all) struct DebugInfo {
   fps : Double
 }
 
-///| 
+///|
 /// Things need to be done in `build`:
 /// - Initialize the backend.
 /// - Set the viewport size.
@@ -54,7 +54,8 @@ pub(open) trait Backend {
     canvas_width : Double,
     canvas_height : Double,
     fps : UInt,
-    // image_smooth : Bool, // Pixel art games may want to disable this TODO:
+    image_smooth : Bool,
+    zoom : Double,
   ) -> () -> Unit
   draw_picture(
     Self,
@@ -78,7 +79,8 @@ pub(open) trait Backend {
     transform~ : @math.Transform,
   ) -> Unit
   register_key_events(Self, pressed_keys : Set[Code]) -> Unit
-  register_mouse_events(Self, mouse : Mouse) -> Unit
+  register_mouse_events(Self, mouse : Mouse, mouse_movement : MouseMovement) -> Unit
+  lock_mouse(Self, locked : Ref[Bool]) -> Unit
   draw_stroke_rect(
     Self,
     x~ : Double,
@@ -103,8 +105,18 @@ pub(open) trait Backend {
     height~ : Double,
     color~ : String,
   ) -> Unit
+  draw_gradient_rect(
+    Self,
+    x~ : Double,
+    y~ : Double,
+    width~ : Double,
+    height~ : Double,
+    color_start~ : String,
+    color_end~ : String,
+  ) -> Unit
   play_audio(Self, audio_path : String, volume~ : Double, loop_~ : Bool) -> Unit
   get_canvas_size(Self) -> @math.Vec2D
+  get_zoom(Self) -> Double
   get_debug_info(Self) -> DebugInfo
   preload_img(Self, path : String) -> Unit
   preload_audio(Self, path : String) -> Unit

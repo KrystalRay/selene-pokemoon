@@ -29,6 +29,11 @@ pub(all) struct Transform {
 }
 
 ///|
+pub fn Transform::clone(self : Transform) -> Transform {
+  { a: self.a, b: self.b, c: self.c, d: self.d, tx: self.tx, ty: self.ty }
+}
+
+///|
 /// Create identity transform
 pub fn Transform::identity() -> Transform {
   { a: 1.0, b: 0.0, c: 0.0, d: 1.0, tx: 0.0, ty: 0.0 }
@@ -37,12 +42,12 @@ pub fn Transform::identity() -> Transform {
 ///|
 /// Create transform from matrix components
 pub fn Transform::new(
-  a~ : Double = 1.0,
-  b~ : Double = 0.0,
-  c~ : Double = 0.0,
-  d~ : Double = 1.0,
-  tx~ : Double = 0.0,
-  ty~ : Double = 0.0,
+  a? : Double = 1.0,
+  b? : Double = 0.0,
+  c? : Double = 0.0,
+  d? : Double = 1.0,
+  tx? : Double = 0.0,
+  ty? : Double = 0.0,
 ) -> Transform {
   { a, b, c, d, tx, ty }
 }
@@ -216,7 +221,7 @@ pub impl Mul for Transform with op_mul(self : Transform, other : Transform) -> T
 // Helper function to check if two doubles are approximately equal
 
 ///|
-fn approx_eq(a : Double, b : Double, epsilon~ : Double = 0.000001) -> Bool {
+fn approx_eq(a : Double, b : Double, epsilon? : Double = 0.000001) -> Bool {
   (a - b).abs() < epsilon
 }
 
@@ -226,7 +231,7 @@ fn approx_eq(a : Double, b : Double, epsilon~ : Double = 0.000001) -> Bool {
 fn transform_approx_eq(
   t1 : Transform,
   t2 : Transform,
-  epsilon~ : Double = 0.000001,
+  epsilon? : Double = 0.000001,
 ) -> Bool {
   approx_eq(t1.a, t2.a, epsilon~) &&
   approx_eq(t1.b, t2.b, epsilon~) &&

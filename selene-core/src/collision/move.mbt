@@ -16,74 +16,50 @@
 /// Move all entities with velocity, modify positions and handle collisions.
 /// Note: 1. This system should be run after any acceleration system.
 ///       2. This system will query a quadtree to find collisions.
-///       3. This system will update velocities of entities when they collide.
+///       3. This system will set real_velocities of entities.
 /// 
 pub fn move_system(_backend : &@system.Backend) -> Unit {
-  for e, collide in collides {
-    guard e.is_alive() else { continue }
-    guard @position.positions.get(e) is Some(pos)
-    guard collide.shape is Rect(size=Vec2D(width, height), offset~)
-    let box = @math.Rect::{
-      position: pos.inner() + offset,
-      size: @math.Vec2D(width, height),
-    }
-    quadtree_root.insert(e, box)
-  }
   collision_infos.clear()
   for e, vel in @velocity.velocities {
     guard e.is_alive() else { continue }
-    if collides.get(e) is Some(collide) {
-      move_with_collide(e, collide, vel.inner())
+    if colliders.get(e) is Some(collide) && collide.active {
+      move_with_collide(e, collide, vel.0)
     } else {
-      move_without_collide(e, vel.inner())
+      move_without_collide(e, vel.0)
     }
   }
 }
 
-///| 
+///|
 fn move_without_collide(e : @system.Entity, velocity : @math.Vec2D) -> Unit {
   guard @position.positions.get(e) is Some(pos)
-  let new_pos = @math.Vec2D(
-    pos.inner()[X] + velocity[X],
-    pos.inner()[Y] + velocity[Y],
-  )
+  let new_pos = @math.Vec2D(pos.0[X] + velocity[X], pos.0[Y] + velocity[Y])
   @position.positions.set(e, new_pos)
-  if areas.get(e) is Some(area) {
-    guard area.shape is Rect(size=Vec2D(width, height), offset~)
-    let box = @math.Rect::{
-      position: new_pos + offset,
-      size: @math.Vec2D(width, height),
-    }
-    let old_box = @math.Rect::{
-      position: pos.inner(),
-      size: @math.Vec2D(width, height),
-    }
-    quadtree_root.remove(e, old_box)
-    quadtree_root.insert(e, box)
-  }
+  real_velocities.set(e, velocity)
 }
 
 ///|
 fn move_with_collide(
   e : @system.Entity,
-  collide : Collide,
+  collide : Collider,
   velocity : @math.Vec2D,
 ) -> Unit {
   guard @position.positions.get(e) is Some(pos)
-  guard collide.shape is Rect(size=Vec2D(width, height), offset~)
+  guard shapes.get(e) is Some(shape)
+  guard shape is Rect(size=Vec2D(width, height), offset~)
   let box = @math.Rect::{
-    position: pos.inner() + offset,
+    position: pos.0 + offset,
     size: @math.Vec2D(width, height),
   }
   let new_x = move_axis(e, box, velocity, X, collide.mask)
   let object_x = @math.Rect::{ size: box.size, position: new_x.0 }
   let new_y = move_axis(e, object_x, new_x.1, Y, collide.mask)
   @position.positions.set(e, new_y.0 - offset)
-  @velocity.velocities.set(e, new_y.1)
-  let new_box = @math.Rect::{ size: box.size, position: new_y.0 }
-  quadtree_root.remove(e, box)
-  quadtree_root.insert(e, new_box)
+  real_velocities.set(e, new_y.1)
 }
+
+///|
+pub let real_velocities : Map[@system.Entity, @velocity.Velocity] = Map::new()
 
 ///|
 fn make_ray_collision(
@@ -103,7 +79,8 @@ fn make_ray_collision(
   }
 }
 
-///| Move object with velocity, returns the destination and updated velocity.
+///|
+/// Move object with velocity, returns the destination and updated velocity.
 fn move_axis(
   entity : @system.Entity,
   object : @math.Rect,
@@ -115,25 +92,42 @@ fn move_axis(
   let mut new_pos = @math.Vec2D(object.position[X], object.position[Y])
   new_pos = new_pos.update(axis, new_pos[axis] + velocity[axis])
   let mut new_velocity = velocity
-  let entities = quadtree_root.query(ray_collision)
-  for e in entities.intersection(@system.all_entities) {
+  let entities = quadtree_query(ray_collision)
+  for e in entities {
+    guard e.is_alive() else { continue }
     guard e != entity else { continue }
-    guard collides.get(e) is Some(collision) else { continue }
-    guard collision.shape is Rect(size=Vec2D(width, height), offset~) else {
-      continue
-    }
+    guard shapes.get(e) is Some(shape) else { continue }
+    guard shape is Rect(size=Vec2D(width, height), offset~) else { continue }
     guard @position.positions.get(e) is Some(pos) else { continue }
-    guard mask.contains(collision.layer) else { continue }
+    guard collision_layers.get(e) is Some(collision_layer) else { continue }
+    guard mask.contains(collision_layer) else { continue }
     let collision_box = @math.Rect::{
       size: @math.Vec2D(width, height),
-      position: pos.inner() + offset,
+      position: pos.0 + offset,
+    }
+    if object.intersects(collision_box) {
+      let movement = aabb_resolve(object, collision_box)
+      new_pos = new_pos + movement
+      let dir = @math.Vec2D::zero().update(
+        axis,
+        if movement[axis] > 0.0 {
+          1.0
+        } else {
+          -1.0
+        },
+      )
+      add_collision_info(entity, e, dir)
+      return (new_pos, movement)
     }
     if @math.Rect::intersects(ray_collision, collision_box) {
       let mut dir = @math.Vec2D(0, 0)
       if new_velocity[axis] > 0 {
         new_pos = new_pos.update(
           axis,
-          collision_box.position[axis] - object.size[axis],
+          @cmp.maximum(
+            collision_box.position[axis] - object.size[axis],
+            object.position[axis],
+          ),
         )
         new_velocity = new_velocity.update(
           axis,
@@ -143,7 +137,10 @@ fn move_axis(
       } else if new_velocity[axis] < 0 {
         new_pos = new_pos.update(
           axis,
-          collision_box.position[axis] + collision_box.size[axis],
+          @cmp.minimum(
+            collision_box.position[axis] + collision_box.size[axis],
+            object.position[axis],
+          ),
         )
         new_velocity = new_velocity.update(
           axis,
@@ -155,4 +152,39 @@ fn move_axis(
     }
   }
   return (new_pos, new_velocity)
+}
+
+///|
+fn aabb_resolve(a : @math.Rect, b : @math.Rect) -> @math.Vec2D {
+  let a_center = a.position + a.size.scalar_mul(0.5)
+  let b_center = b.position + b.size.scalar_mul(0.5)
+  let a_half = a.size.scalar_mul(0.5)
+  let b_half = b.size.scalar_mul(0.5)
+  let delta = b_center - a_center
+  let intersect = @math.Vec2D(
+    delta[X].abs() - (b_half[X] + a_half[X]),
+    delta[Y].abs() - (b_half[Y] + a_half[Y]),
+  )
+  if intersect[X] > intersect[Y] {
+    if delta[X] > 0 {
+      @math.Vec2D(intersect[X], 0.0)
+    } else {
+      @math.Vec2D(-intersect[X], 0.0)
+    }
+  } else if delta[Y] > 0 {
+    @math.Vec2D(0.0, intersect[Y])
+  } else {
+    @math.Vec2D(0.0, -intersect[Y])
+  }
+}
+
+///|
+test "AABB resolve" {
+  let a = @math.Rect::{ position: @math.Vec2D(0, 0), size: @math.Vec2D(32, 32) }
+  let b = @math.Rect::{
+    position: @math.Vec2D(16, 16),
+    size: @math.Vec2D(32, 32),
+  }
+  let movement = aabb_resolve(a, b)
+  inspect(movement, content="Vec2D(0, -16)")
 }
