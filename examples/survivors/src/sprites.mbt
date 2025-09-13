@@ -141,28 +141,115 @@ let grass_sprite : @sprite.Animation = @sprite.Animation::new(
 let background_picture = "assets/tilesets/grass.png"
 
 ///|
-let slime_right_animation : @sprite.Animation = @sprite.Animation::new(
+let creeper_right_animation : @sprite.Animation = @sprite.Animation::new(
   @sprite.frames_from_atlas(
-    "assets/enemy/slime.png",
+    "assets/enemy/Creeper.png",
     4,
     width=16,
-    height=16,
-    offset=Vec2D(8, 40),
-    space_x=16,
+    height=24,
+    offset=Vec2D(0, 48),
+    space_x=0,
   ),
   rate=0.2,
   loop_=true,
+  transform=@math.Transform::new(),
 )
 
 ///|
-let slime_left_animation : @sprite.Animation = @sprite.Animation::new(
+let creeper_left_animation : @sprite.Animation = @sprite.Animation::new(
   @sprite.frames_from_atlas(
-    "assets/enemy/slime.png",
+    "assets/enemy/Creeper.png",
     4,
     width=16,
-    height=16,
-    offset=Vec2D(8, 40),
-    space_x=16,
+    height=24,
+    offset=Vec2D(0, 48),
+    space_x=0,
+  ),
+  rate=0.2,
+  loop_=true,
+  transform=@math.Transform::flip_x(16),
+)
+
+///|
+let icecream_right_animation : @sprite.Animation = @sprite.Animation::new(
+  @sprite.frames_from_atlas(
+    "assets/enemy/Icecream.png",
+    4,
+    width=16,
+    height=24,
+    offset=Vec2D(0, 48),
+    space_x=0,
+  ),
+  rate=0.2,
+  loop_=true,
+  transform=@math.Transform::new(),
+)
+
+///|
+let icecream_left_animation : @sprite.Animation = @sprite.Animation::new(
+  @sprite.frames_from_atlas(
+    "assets/enemy/Icecream.png",
+    4,
+    width=16,
+    height=24,
+    offset=Vec2D(0, 48),
+    space_x=0,
+  ),
+  rate=0.2,
+  loop_=true,
+  transform=@math.Transform::flip_x(16),
+)
+
+let orc_right_animation : @sprite.Animation = @sprite.Animation::new(
+  @sprite.frames_from_atlas(
+    "assets/enemy/Orc.png",
+    4,
+    width=16,
+    height=24,
+    offset=Vec2D(0, 48),
+    space_x=0,
+  ),
+  rate=0.2,
+  loop_=true,
+  transform=@math.Transform::new(),
+)
+
+let orc_left_animation : @sprite.Animation = @sprite.Animation::new(
+  @sprite.frames_from_atlas(
+    "assets/enemy/Orc.png",
+    4,
+    width=16,
+    height=24,
+    offset=Vec2D(0, 48),
+    space_x=0,
+  ),
+  rate=0.2,
+  loop_=true,
+  transform=@math.Transform::flip_x(16),
+)
+
+let skull_right_animation : @sprite.Animation = @sprite.Animation::new(
+  @sprite.frames_from_atlas(
+    "assets/enemy/Skull.png",
+    4,
+    width=16,
+    height=24,
+    offset=Vec2D(0, 48),
+    space_x=0,
+  ),
+  rate=0.2,
+  loop_=true,
+  transform=@math.Transform::new(),
+)
+
+let skull_left_animation : @sprite.Animation = @sprite.Animation::new(
+  @sprite.frames_from_atlas(
+    "assets/enemy/Skull.png",
+    4,
+    width=16,
+    height=24,
+    offset=Vec2D(0, 48),
+    space_x=0,
   ),
   rate=0.2,
   loop_=true,
